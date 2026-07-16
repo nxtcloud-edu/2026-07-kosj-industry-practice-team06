@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 마케팅 문구 생성기</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: 0 auto; }
+        button { 
+            padding: 15px; width: 100%; font-size: 16px; font-weight: bold;
+            background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; 
+        }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #loading { display: none; text-align: center; margin-top: 20px; color: #555; }
+        #result { 
+            display: none; margin-top: 20px; padding: 15px; 
+            border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; 
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>🍰 카페 AI 마케터</h2>
+    <p>버튼을 누르면 주변 지역 축제 정보를 분석하여 최적의 인스타그램 홍보 문구를 생성합니다.</p>
+    
+    <!-- 액션 버튼 -->
+    <button id="generateBtn" onclick="generateText()">인스타그램 홍보 문구 생성하기</button>
+    
+    <!-- 로딩 메시지 -->
+    <div id="loading">AI가 열심히 마케팅 문구를 작성하고 있습니다... ⏳</div>
+    
+    <!-- 결과 출력 창 -->
+    <div id="result"></div>
+
+    <script>
+        async function generateText() {
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            // 1. 상태 변경: 버튼 끄고 로딩 메시지 띄우기
+            btn.disabled = true;
+            loading.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            try {
+                // 2. 백엔드(/generate)로 POST 요청 보내기
+                const response = await fetch('/generate', { method: 'POST' });
+                const data = await response.json();
+                
+                // 3. 성공 여부에 따라 화면에 데이터 뿌려주기
+                if (data.success) {
+                    resultDiv.textContent = data.text;
+                    resultDiv.style.display = 'block';
+                } else {
+                    alert("오류가 발생했습니다: " + data.error);
+                }
+            } catch (error) {
+                alert("서버와 통신하는 중 문제가 발생했습니다.");
+            } finally {
+                // 4. 상태 복구: 로딩 끄고 버튼 다시 켜기
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
