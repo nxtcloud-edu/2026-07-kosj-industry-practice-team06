@@ -24,5 +24,25 @@ out/
 .DS_Store
 Thumbs.db
 
-# Byte-compiled
-*.pyc
+# DB (로컬 생성됨)
+*.db
+
+# 테스트/프로토타입 스크립트 (앱 실행에 불필요)
+TourAPI.py
+TourParsing.py
+MarketingComment.py
+상권API.py
+test_*.py
+prototypes/
+
+# 유틸리티 스크립트 (앱 실행에 불필요)
+create_proposal_pdf.py
+html_to_pdf.py
+
+# 기획 문서·제안서 (깃허브 공개 불필요)
+idea-note.html
+index.html
+notice.md
+proposal*.html
+입찰제안서*
+*.pdf
