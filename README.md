@@ -37,7 +37,7 @@
 
 | 영역 | 기술 | 선정 이유 |
 |------|------|-----------|
-| 프론트엔드 | HTML/CSS/JS SPA (Next.js 전환 예정) | 모바일 우선 반응형, 빠른 MVP |
+| 프론트엔드 | Next.js (React) | 모바일 우선 반응형, Vercel 무료 배포 |
 | 백엔드 | FastAPI (Python) | AI/데이터 처리 최적, Gemini SDK 연동 |
 | AI | Google Gemini API | 무료 티어, 카드 등록 불필요 |
 | DB | SQLite | 설치 불필요, 가게·콘텐츠 이력 저장 |
@@ -66,7 +66,20 @@
 │   └── .env.example
 ├── templates/
 │   └── index.html              ← 프론트엔드 SPA (모바일 웹앱)
-├── frontend/                   ← Next.js (확장 예정)
+├── frontend/                   ← Next.js 프론트엔드 (React)
+│   ├── app/
+│   │   ├── layout.js           ← 루트 레이아웃
+│   │   ├── page.js             ← 메인 페이지 (탭 전환)
+│   │   ├── globals.css         ← 전역 스타일
+│   │   └── screens/            ← 화면 컴포넌트
+│   │       ├── RegisterScreen.js
+│   │       ├── HomeScreen.js
+│   │       ├── ResultScreen.js
+│   │       ├── ReportScreen.js
+│   │       ├── TourismScreen.js
+│   │       └── SettingsScreen.js
+│   ├── next.config.js          ← API 프록시 설정
+│   └── package.json
 ├── app.py                      ← Flask 프로토타입 (레거시)
 ├── .env                        ← API 키 (gitignore 대상)
 ├── .gitignore
@@ -83,9 +96,17 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-브라우저에서 http://localhost:8000 접속 (모바일 뷰 권장)
+### Frontend (Next.js)
 
-> `.env` 파일이 프로젝트 루트에 있으면 자동으로 로드됩니다.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+브라우저에서 http://localhost:3000 접속 (모바일 뷰 권장)
+
+> FastAPI(8000)와 Next.js(3000)를 동시에 실행해야 합니다. Next.js가 `/api/*` 요청을 FastAPI로 프록시합니다.
 
 ## 환경변수
 
