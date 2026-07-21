@@ -8,12 +8,13 @@ const templateThemes = [
   { gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', emoji: '✨', vibe: '특별한 오늘' },
 ];
 
-export default function ResultScreen({ result, store, onBack, onRegenerate, onUpdate }) {
+export default function ResultScreen({ result, store, onBack, onRegenerate, onUpdate, onSave }) {
   const [editing, setEditing] = useState(false);
   const [caption, setCaption] = useState(result.instagram || '');
   const [banner, setBanner] = useState(result.banner || '');
   const [tplIdx, setTplIdx] = useState(0);
   const [regenerating, setRegenerating] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const theme = templateThemes[tplIdx % templateThemes.length];
   const hasProhibited = /전국 1위|최고|무조건|100%|완벽|절대/.test(result.instagram + result.banner);
@@ -103,7 +104,12 @@ export default function ResultScreen({ result, store, onBack, onRegenerate, onUp
           : <><button className="btn-outline" style={{ flex: 1 }} onClick={() => setEditing(true)}>✏️ 문구 수정</button><button className="btn-outline" style={{ flex: 1 }} onClick={doRegenerate} disabled={regenerating}>{regenerating ? '⏳ 생성 중...' : '🔄 다시 생성'}</button></>
         }
       </div>
-      <div style={{ padding: '12px 16px 24px' }}><button className="btn btn-primary" onClick={copy}>📋 텍스트 복사</button></div>
+      <div style={{ padding: '12px 16px 24px', display: 'flex', gap: '8px' }}>
+        <button className="btn btn-primary" style={{ flex: 1 }} onClick={copy}>📋 복사</button>
+        <button className="btn btn-primary" style={{ flex: 1, background: saved ? 'var(--success)' : 'linear-gradient(135deg, #667eea, #764ba2)' }} onClick={() => { onSave(result); setSaved(true); setTimeout(() => setSaved(false), 2000); }}>
+          {saved ? '✅ 저장됨' : '💾 저장'}
+        </button>
+      </div>
     </div>
   );
 }
