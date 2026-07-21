@@ -76,7 +76,7 @@
 cd backend
 pip install -r requirements.txt
 cp .env.example .env   # .env에 실제 API 키 입력
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 ### 프로토타입 (Flask, 빠른 시연용)
