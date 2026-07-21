@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>AI 소상공인 마케팅 플랫폼</title>
+    <style>
+        /* ===== 팀원 templates/index.html 스타일 그대로 ===== */
+        :root {
+            --primary: #667eea; --primary-dark: #5a6fd6; --success: #10b981;
+            --bg: #f5f5f7; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; word-break: keep-all; }
+        html { overflow-y: scroll; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); max-width: 480px; margin: 0 auto; min-height: 100vh;
+        }
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; height: 88px;
+                       padding: 0 20px; display: flex; flex-direction: column; justify-content: center; }
+        .page-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .page-header p { font-size: 0.85rem; color: rgba(255,255,255,0.9); margin-top: 4px; }
+
+        .lead { font-size: 14px; color: var(--text-light); margin: 20px 16px 4px; }
+        .entry-card { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--border);
+                      border-radius: 16px; padding: 20px; margin: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+                      text-decoration: none; color: inherit; }
+        .entry-card .ico { font-size: 2rem; flex-shrink: 0; }
+        .entry-card .body { flex: 1; }
+        .entry-card .t { font-size: 16px; font-weight: 700; }
+        .entry-card .d { font-size: 13px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+        .entry-card .arrow { color: var(--primary); font-size: 1.3rem; font-weight: 700; }
+        .entry-card.a { border-left: 4px solid #667eea; }
+        .entry-card.b { border-left: 4px solid #764ba2; }
+
+        .subs { display: flex; gap: 8px; margin: 4px 16px 0; }
+        .subs a { flex: 1; text-align: center; font-size: 13px; color: var(--primary); background: #eef2ff;
+                  border-radius: 12px; padding: 12px; text-decoration: none; font-weight: 600; }
+        .note { font-size: 12px; color: #94a3b8; margin: 16px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>AI 소상공인 마케팅 플랫폼</h1>
+        <p>공고번호 2026-세종-0004 · 고대세종 기업인턴십 6팀</p>
+    </div>
+
+    <p class="lead">이용할 화면을 선택하세요 — 하나의 서비스, 두 사용자입니다.</p>
+
+    <a class="entry-card a" href="/app">
+        <div class="ico">🏪</div>
+        <div class="body">
+            <div class="t">소상공인 앱</div>
+            <div class="d">사장님이 자연어로 홍보 콘텐츠를 생성·저장하는 화면</div>
+        </div>
+        <div class="arrow">→</div>
+    </a>
+
+    <a class="entry-card b" href="/admin">
+        <div class="ico">📊</div>
+        <div class="body">
+            <div class="t">진흥원 성과 대시보드</div>
+            <div class="d">세종경제관광진흥원 담당자용 관내 성과 집계</div>
+        </div>
+        <div class="arrow">→</div>
+    </a>
+
+    <div class="note">
+        ※ 본 사이트는 입찰 제안용 <b>MVP(개념 시연) 페이지</b>입니다.
+        실제 운영 데이터가 아닌 시연용 데이터로 동작합니다.
+    </div>
+</body>
+</html>
