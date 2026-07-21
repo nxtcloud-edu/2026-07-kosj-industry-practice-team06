@@ -193,6 +193,9 @@
     <div id="tourism-spots"></div>
     <div style="padding:12px 16px 4px;"><h3 style="font-size:14px; font-weight:700;">추천 코스</h3></div>
     <div class="card" id="tourism-course"></div>
+    <div style="padding:0 16px 8px; display:flex; gap:8px;">
+        <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="changeCourse()">🔄 다른 코스 보기</button>
+    </div>
     <div style="padding:0 16px 24px;">
         <button class="btn btn-primary" onclick="courseToContent()">🎨 이 코스로 홍보물 만들기</button>
     </div>
@@ -477,10 +480,10 @@ async function loadReport() {
         if (data.success) {
             // 업종별 매칭: category 필드(= indsSclsNm)에서 가게 업종과 관련된 것 필터링
             const categoryKeywords = {
-                '개인카페': ['카페', '커피', '디저트', '제과', '베이커리', '빵'],
-                '식당': ['한식', '중식', '일식', '양식', '음식', '분식', '치킨', '피자'],
-                '농산물': ['농산물', '과일', '채소', '청과'],
-                '소매': ['소매', '편의점', '마트', '슈퍼'],
+                '개인카페': ['카페', '커피', '디저트', '제과', '베이커리', '빵', '도넛', '스타벅스', '이디야', '투썸', '빽다방', '컴포즈', '메가커피', '할리스', '엔제리너스', '탐앤탐스', '파스쿠찌', '더벤티'],
+                '식당': ['한식', '중식', '일식', '양식', '음식', '분식', '치킨', '피자', '국', '탕', '찌개', '고기', '횟집', '돈까스'],
+                '농산물': ['농산물', '과일', '채소', '청과', '농협'],
+                '소매': ['소매', '편의점', '마트', '슈퍼', '잡화'],
             };
             const keywords = categoryKeywords[store.category] || ['카페'];
             const sameCategory = data.stores.filter(s => {
@@ -528,6 +531,28 @@ function showSampleReport() {
 }
 
 // ─── 관광 연계 ───
+let tourismFestivals = [];
+let currentCourseIdx = 0;
+
+const courseTemplates = [
+    { name: '축제 → 내 가게 → 관광지', steps: (f, s) => [
+        { name: f.title || '축제장', transport: '출발', highlight: false },
+        { name: `☕ ${s.name}`, transport: '도보 5분', highlight: true },
+        { name: '세종호수공원', transport: '차량 15분', highlight: false },
+    ]},
+    { name: '관광지 → 내 가게 → 축제', steps: (f, s) => [
+        { name: '세종호수공원', transport: '출발', highlight: false },
+        { name: `☕ ${s.name}`, transport: '차량 15분', highlight: true },
+        { name: f.title || '축제장', transport: '도보 5분', highlight: false },
+    ]},
+    { name: '내 가게 중심 코스', steps: (f, s) => [
+        { name: `☕ ${s.name}`, transport: '출발', highlight: true },
+        { name: f.title || '축제장', transport: '도보 5분', highlight: false },
+        { name: '조치원역 근대문화거리', transport: '도보 8분', highlight: false },
+        { name: `☕ ${s.name} (복귀)`, transport: '도보 10분', highlight: true },
+    ]},
+];
+
 async function loadTourism() {
     if (!store) return;
     try {
@@ -538,39 +563,55 @@ async function loadTourism() {
         });
         const data = await res.json();
         if (data.success && data.festivals.length > 0) {
+            tourismFestivals = data.festivals;
             document.getElementById('tourism-spots').innerHTML = data.festivals.map(f => `
                 <div class="card"><div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div><h3 style="font-size:14px; font-weight:700;">🎉 ${f.title}</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${f.start_date || ''}~${f.end_date || ''} | ${f.address || ''}</p></div>
                     <span class="badge badge-festival">축제</span>
                 </div></div>
             `).join('');
-            renderCourse(data.festivals[0]);
+            currentCourseIdx = 0;
+            renderCurrentCourse();
         } else { showSampleTourism(); }
     } catch(e) { showSampleTourism(); }
 }
 
 function showSampleTourism() {
+    tourismFestivals = [{ title: '조치원 복숭아 축제' }];
     document.getElementById('tourism-spots').innerHTML = `
         <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🎉 조치원 복숭아 축제</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">7/25~7/27 | 내 가게에서 도보 5분</p></div><span class="badge badge-festival">D-7</span></div></div>
         <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🏞️ 세종호수공원</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">차량 15분 | 관광지</p></div><span class="badge badge-season">상시</span></div></div>
     `;
+    currentCourseIdx = 0;
+    renderCurrentCourse();
+}
+
+function renderCurrentCourse() {
+    const festival = tourismFestivals[0] || { title: '축제장' };
+    const template = courseTemplates[currentCourseIdx % courseTemplates.length];
+    const steps = template.steps(festival, store);
+
     document.getElementById('tourism-course').innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</div><div><p style="font-size:13px; font-weight:600;">복숭아 축제장</p><p style="font-size:11px; color:var(--text-light);">출발</p></div></div>
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</div><div><p style="font-size:13px; font-weight:600;">☕ ${store ? store.name : '내 카페'}</p><p style="font-size:11px; color:var(--text-light);">도보 5분</p></div></div>
-        <div style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">3</div><div><p style="font-size:13px; font-weight:600;">세종호수공원</p><p style="font-size:11px; color:var(--text-light);">차량 15분</p></div></div>
+        <p style="font-size:11px; color:var(--text-light); margin-bottom:12px;">코스 ${currentCourseIdx % courseTemplates.length + 1}/${courseTemplates.length}: ${template.name}</p>
+        ${steps.map((step, i) => `
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:${i < steps.length - 1 ? '14px' : '0'};">
+                <div style="width:28px; height:28px; border-radius:50%; background:${step.highlight ? 'var(--primary)' : 'var(--border)'}; color:${step.highlight ? 'white' : 'var(--text)'}; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">${i + 1}</div>
+                <div><p style="font-size:13px; font-weight:600;">${step.name}</p><p style="font-size:11px; color:var(--text-light);">${step.transport}</p></div>
+            </div>
+        `).join('')}
     `;
 }
 
-function renderCourse(festival) {
-    document.getElementById('tourism-course').innerHTML = `
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</div><div><p style="font-size:13px; font-weight:600;">${festival.title}</p><p style="font-size:11px; color:var(--text-light);">출발</p></div></div>
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</div><div><p style="font-size:13px; font-weight:600;">☕ ${store.name}</p><p style="font-size:11px; color:var(--text-light);">도보 5분</p></div></div>
-        <div style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">3</div><div><p style="font-size:13px; font-weight:600;">세종호수공원</p><p style="font-size:11px; color:var(--text-light);">차량 15분</p></div></div>
-    `;
+function changeCourse() {
+    currentCourseIdx++;
+    renderCurrentCourse();
+    showToast(`코스 ${currentCourseIdx % courseTemplates.length + 1}로 변경됨`);
 }
 
 function courseToContent() {
-    document.getElementById('userInput').value = '축제 방문객 대상 홍보물 만들어줘. 축제장에서 도보 5분 거리라는 걸 강조해줘.';
+    const festival = tourismFestivals[0] || { title: '축제' };
+    const template = courseTemplates[currentCourseIdx % courseTemplates.length];
+    document.getElementById('userInput').value = `${festival.title} 방문객 대상 홍보물 만들어줘. 코스: ${template.name}. 축제장에서 도보 5분 거리라는 걸 강조해줘.`;
     showScreen('home');
     showToast('코스 기반 홍보물을 만들어보세요!');
 }
