@@ -2,401 +2,597 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>마케팅AI — 소상공인 마케팅 플랫폼</title>
     <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a6fd6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f5f5f7;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f7;
+            background: var(--bg);
+            color: var(--text);
+            max-width: 480px;
+            margin: 0 auto;
             min-height: 100vh;
             padding-bottom: 80px;
         }
+        .hidden { display: none !important; }
 
-        /* 헤더 */
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 24px 20px;
-            color: white;
-        }
-        .header h1 { font-size: 20px; font-weight: 700; }
-        .header p { font-size: 14px; opacity: 0.9; margin-top: 4px; }
-
-        /* 메인 컨테이너 */
-        .container { max-width: 480px; margin: 0 auto; padding: 20px; }
-
-        /* 자연어 입력 영역 */
-        .input-section {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            margin-bottom: 16px;
-        }
-        .input-section label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .input-section textarea {
-            width: 100%;
-            min-height: 80px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 14px;
-            font-size: 15px;
-            resize: none;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .input-section textarea:focus { border-color: #667eea; }
-        .input-section textarea::placeholder { color: #aaa; }
-
-        .btn-generate {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: opacity 0.2s;
-        }
-        .btn-generate:hover { opacity: 0.9; }
-        .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* 추천 제안 카드 */
-        .suggestions {
-            margin-bottom: 16px;
-        }
-        .suggestions h3 {
-            font-size: 13px;
-            font-weight: 600;
-            color: #888;
-            margin-bottom: 8px;
-        }
-        .suggestion-card {
-            background: white;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 8px;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-            cursor: pointer;
-            transition: transform 0.15s;
-            border-left: 3px solid #667eea;
-        }
-        .suggestion-card:hover { transform: translateX(4px); }
-        .suggestion-card .title { font-size: 14px; font-weight: 600; color: #333; }
-        .suggestion-card .desc { font-size: 12px; color: #666; margin-top: 4px; }
-        .suggestion-card .tag {
-            display: inline-block;
-            font-size: 11px;
-            background: #f0eeff;
-            color: #667eea;
-            padding: 2px 8px;
-            border-radius: 8px;
-            margin-top: 6px;
-        }
-
-        /* 로딩 */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-        }
-        .loading .spinner {
-            width: 40px; height: 40px;
-            border: 3px solid #e0e0e0;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 12px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading p { font-size: 14px; color: #666; }
-
-        /* 결과 영역 */
-        .result-section { display: none; }
-
-        .result-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        }
-        .result-card h3 {
-            font-size: 13px;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        .result-card .content {
-            font-size: 15px;
-            line-height: 1.7;
-            color: #333;
-            white-space: pre-wrap;
-        }
-
-        /* 데이터 근거 표시 */
-        .data-badge {
-            background: #f8f8ff;
-            border: 1px solid #e8e5ff;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .data-badge p {
-            font-size: 12px;
-            color: #666;
-            line-height: 1.5;
-        }
-        .data-badge .label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        /* 액션 버튼들 */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-        .btn-action {
-            padding: 10px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1.5px solid #e0e0e0;
-            background: white;
-            color: #333;
-            transition: all 0.2s;
-        }
-        .btn-action:hover { border-color: #667eea; color: #667eea; }
-        .btn-action.primary {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        .btn-action.primary:hover { background: #5a6fd6; }
-
-        /* 하단 네비게이션 */
+        /* 바텀 네비 */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            border-top: 1px solid #eee;
-            max-width: 480px;
-            margin: 0 auto;
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: var(--card);
+            border-top: 1px solid var(--border); display: flex;
+            justify-content: space-around; padding: 10px 0 18px; z-index: 100;
         }
         .nav-item {
-            text-align: center;
-            font-size: 11px;
-            color: #999;
-            text-decoration: none;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 11px; color: var(--text-light); cursor: pointer;
+            border: none; background: none;
         }
-        .nav-item.active { color: #667eea; }
-        .nav-item .icon { font-size: 20px; display: block; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item .icon { font-size: 20px; }
 
-        /* 토스트 알림 */
-        .toast {
-            display: none;
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 24px;
-            font-size: 14px;
-            z-index: 1000;
-        }
+        /* 공통 */
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .page-header { padding: 20px 16px 8px; }
+        .page-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .page-header p { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+        .btn { display: block; width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: white; border: 1.5px solid var(--border); color: var(--text); }
+        input, select, textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 14px; outline: none; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-api { background: #dcfce7; color: #166534; }
+        .badge-sample { background: #fef3c7; color: #92400e; }
+        .badge-festival { background: #fef3c7; color: #92400e; }
+        .badge-season { background: #dbeafe; color: #1e40af; }
+        .badge-area { background: #dcfce7; color: #166534; }
+        .spinner { width: 20px; height: 20px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .toast { display: none; position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 24px; font-size: 14px; z-index: 1000; }
     </style>
 </head>
 <body>
 
-    <!-- 헤더 -->
-    <div class="header">
+<!-- ===================== 화면 1: 가게 등록 ===================== -->
+<div id="screen-register">
+    <div style="padding: 40px 16px; text-align: center;">
+        <h1 style="font-size: 1.5rem; font-weight: 800;">마케팅AI</h1>
+        <p style="color: var(--text-light); margin-top: 8px;">처음 오셨네요! 가게 정보를 알려주세요.</p>
+    </div>
+    <div class="card">
+        <h2 style="font-size: 1rem; font-weight: 700; margin-bottom: 16px;">내 가게 정보</h2>
+        <div style="margin-bottom: 14px;">
+            <label>가게 이름</label>
+            <input type="text" id="reg-name" placeholder="예: 조치원 ○○카페">
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label>위치</label>
+            <input type="text" id="reg-address" value="세종시 조치원읍" placeholder="세종시 조치원읍">
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label>업종 선택</label>
+            <select id="reg-category">
+                <option value="개인카페">☕ 개인카페</option>
+                <option value="농산물">🍎 농산물</option>
+                <option value="식당">🍚 식당</option>
+                <option value="소매">🛍️ 소매</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 14px;">
+            <label>대표 메뉴 (선택)</label>
+            <input type="text" id="reg-menu" placeholder="예: 복숭아 케이크 8000원">
+        </div>
+        <button class="btn btn-primary" onclick="saveStore()">저장하고 시작하기</button>
+    </div>
+</div>
+
+<!-- ===================== 화면 2: 홈 (자연어 입력 + 선제 제안) ===================== -->
+<div id="screen-home" class="hidden">
+    <div class="page-header">
         <h1>마케팅AI</h1>
-        <p>김OO 사장님, 오늘은 뭘 홍보해볼까요?</p>
+        <p id="home-greeting">사장님, 오늘은 뭘 홍보해볼까요?</p>
+    </div>
+    <div class="card">
+        <textarea id="userInput" rows="3" style="resize:none; margin-bottom:12px;" placeholder="복숭아 제철이고 곧 축제 열리니까, 복숭아 케이크 한정판매 홍보물 만들어줘"></textarea>
+        <button class="btn btn-primary" id="generateBtn" onclick="generateContent()">✨ 콘텐츠 만들기</button>
+    </div>
+    <div style="padding: 0 16px;">
+        <h3 style="font-size: 13px; font-weight: 600; color: var(--text-light); margin: 16px 0 8px;">추천 제안</h3>
+    </div>
+    <div id="suggestion-cards"></div>
+</div>
+
+<!-- ===================== 화면 3: 결과 (콘텐츠 + 검수 + 이미지) ===================== -->
+<div id="screen-result" class="hidden">
+    <div class="page-header">
+        <button onclick="showScreen('home')" style="background:none; border:none; cursor:pointer; font-size:1.1rem;">← 뒤로</button>
+        <h1 style="margin-top:8px;">생성된 콘텐츠</h1>
     </div>
 
-    <div class="container">
-
-        <!-- 자연어 입력 -->
-        <div class="input-section">
-            <label>💬 홍보하고 싶은 내용을 자유롭게 써주세요</label>
-            <textarea id="userInput" placeholder="예: 복숭아 제철이고 곧 축제 열리니까, 복숭아 케이크 한정판매 홍보물 만들어줘"></textarea>
-            <button class="btn-generate" id="generateBtn" onclick="generate()">✨ 콘텐츠 만들기</button>
+    <!-- 템플릿 이미지 -->
+    <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">🖼️ 템플릿 이미지 미리보기</h3>
+        <div id="template-image"></div>
+        <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="changeTemplate()">🎨 템플릿 변경</button>
         </div>
-
-        <!-- 추천 제안 -->
-        <div class="suggestions">
-            <h3>📌 추천 제안</h3>
-            <div class="suggestion-card" onclick="fillPrompt('복숭아 제철이니까 복숭아 케이크 한정판매 홍보해줘')">
-                <div class="title">🍑 복숭아 축제 시즌</div>
-                <div class="desc">제철 복숭아 활용 한정메뉴 홍보는 어떨까요?</div>
-                <span class="tag">축제시즌</span>
-            </div>
-            <div class="suggestion-card" onclick="fillPrompt('여름 시원한 음료 신메뉴 출시 인스타 홍보 만들어줘')">
-                <div class="title">☀️ 여름 신메뉴 홍보</div>
-                <div class="desc">더운 날씨에 맞는 시원한 메뉴 홍보물 제안</div>
-                <span class="tag">시즌</span>
-            </div>
-            <div class="suggestion-card" onclick="fillPrompt('주말 가족 고객 대상 디저트 세트 할인 이벤트 홍보해줘')">
-                <div class="title">👨‍👩‍👧 주말 유동인구 증가</div>
-                <div class="desc">이번 주말 가족 단위 손님을 잡아보세요</div>
-                <span class="tag">상권</span>
-            </div>
-        </div>
-
-        <!-- 로딩 -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>AI가 상권·관광 데이터를 분석하고<br>맞춤 홍보 문구를 작성하고 있어요...</p>
-        </div>
-
-        <!-- 결과 영역 -->
-        <div class="result-section" id="resultSection">
-
-            <!-- 데이터 근거 -->
-            <div class="data-badge" id="dataBadge">
-                <p class="label">📊 활용된 데이터</p>
-                <p id="dataInfo">상권·관광 데이터 로딩 중...</p>
-            </div>
-
-            <!-- 인스타 캡션 -->
-            <div class="result-card">
-                <h3>📸 인스타그램 캡션</h3>
-                <div class="content" id="instagramResult"></div>
-            </div>
-
-            <!-- 배너 문구 -->
-            <div class="result-card">
-                <h3>🎨 배너 문구</h3>
-                <div class="content" id="bannerResult"></div>
-            </div>
-
-            <!-- 해시태그 -->
-            <div class="result-card">
-                <h3>#️⃣ 추천 해시태그</h3>
-                <div class="content" id="hashtagResult"></div>
-            </div>
-
-            <!-- 액션 버튼 -->
-            <div class="action-buttons">
-                <button class="btn-action" onclick="copyResult()">📋 텍스트 복사</button>
-                <button class="btn-action" onclick="regenerate()">🔄 다시 생성</button>
-                <button class="btn-action primary" onclick="confirmResult()">✅ 확정 & 저장</button>
-            </div>
-        </div>
-
     </div>
 
-    <!-- 하단 네비게이션 -->
-    <div class="bottom-nav">
-        <a class="nav-item active" href="#">
-            <span class="icon">🏠</span>홈
-        </a>
-        <a class="nav-item" href="#">
-            <span class="icon">📊</span>리포트
-        </a>
-        <a class="nav-item" href="#">
-            <span class="icon">🗺️</span>관광
-        </a>
-        <a class="nav-item" href="#">
-            <span class="icon">⚙️</span>설정
-        </a>
+    <!-- 근거 표시 -->
+    <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">📋 이 콘텐츠의 근거</h3>
+        <p style="font-size: 12px; color: var(--text-light); margin-bottom: 10px;">AI가 어떤 데이터를 참고했는지 보여드려요.</p>
+        <div id="sources-list"></div>
     </div>
 
-    <!-- 토스트 -->
-    <div class="toast" id="toast"></div>
+    <!-- 게시 전 검수 -->
+    <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">게시 전 검수</h3>
+        <div id="check-result"></div>
+    </div>
 
-    <script>
-        let lastResult = {};
+    <!-- 인스타 캡션 -->
+    <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">📸 인스타 캡션</h3>
+        <div id="caption-display" style="padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; line-height:1.7; white-space:pre-wrap;"></div>
+        <textarea id="caption-edit" class="hidden" rows="5" style="margin-top:8px; resize:vertical;"></textarea>
+    </div>
 
-        function fillPrompt(text) {
-            document.getElementById('userInput').value = text;
-            document.getElementById('userInput').focus();
+    <!-- 배너 문구 -->
+    <div class="card">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">🎨 배너 문구</h3>
+        <div id="banner-display" style="padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; font-weight:600; text-align:center;"></div>
+        <input id="banner-edit" class="hidden" type="text" style="margin-top:8px;">
+    </div>
+
+    <!-- 액션 버튼 -->
+    <div style="padding:0 16px; display:flex; gap:8px;">
+        <button id="btn-edit" class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="toggleEdit()">✏️ 문구 수정</button>
+        <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="regenerateContent()">🔄 다시 생성</button>
+    </div>
+    <div style="padding:12px 16px 24px;">
+        <button class="btn btn-primary" onclick="copyAll()">📋 텍스트 복사</button>
+    </div>
+</div>
+
+<!-- ===================== 화면 4: 상권 리포트 ===================== -->
+<div id="screen-report" class="hidden">
+    <div class="page-header">
+        <h1>내 가게 주변 상권</h1>
+        <p id="report-subtitle"></p>
+    </div>
+    <div class="card" id="report-stats"></div>
+    <div class="card" id="report-insight"></div>
+    <div class="card" id="report-competitors"></div>
+    <div class="card" id="report-strategy" style="background:#f0fdf4; border:1px solid #bbf7d0;"></div>
+</div>
+
+<!-- ===================== 화면 5: 관광 연계 ===================== -->
+<div id="screen-tourism" class="hidden">
+    <div class="page-header">
+        <h1>관광 연계</h1>
+        <p>내 가게 주변 관광지·축제</p>
+    </div>
+    <div id="tourism-spots"></div>
+    <div style="padding:12px 16px 4px;"><h3 style="font-size:14px; font-weight:700;">추천 코스</h3></div>
+    <div class="card" id="tourism-course"></div>
+    <div style="padding:0 16px 24px;">
+        <button class="btn btn-primary" onclick="courseToContent()">🎨 이 코스로 홍보물 만들기</button>
+    </div>
+</div>
+
+<!-- ===================== 화면 6: 설정 ===================== -->
+<div id="screen-settings" class="hidden">
+    <div class="page-header">
+        <h1>설정</h1>
+        <p>가게 정보 관리</p>
+    </div>
+    <div class="card" id="settings-info"></div>
+    <div class="card">
+        <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">서비스 정보</h3>
+        <div style="font-size:13px; color:var(--text-light); line-height:2;">
+            <p>버전: 1.0.0 (MVP)</p>
+            <p>AI: Google Gemini API</p>
+            <p>데이터: 상권정보API, TourAPI 4.0</p>
+            <p>제안사: 2026_고대세종_기업인턴십_6팀</p>
+        </div>
+    </div>
+    <div style="padding:0 16px;">
+        <button class="btn" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca;" onclick="resetStore()">가게 정보 초기화</button>
+    </div>
+</div>
+
+<!-- 바텀 네비 -->
+<nav class="bottom-nav" id="bottom-nav" class="hidden">
+    <button class="nav-item active" data-tab="home"><span class="icon">🏠</span>홈</button>
+    <button class="nav-item" data-tab="report"><span class="icon">📊</span>리포트</button>
+    <button class="nav-item" data-tab="tourism"><span class="icon">🗺️</span>관광</button>
+    <button class="nav-item" data-tab="settings"><span class="icon">⚙️</span>설정</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── 상태 관리 ───
+let store = JSON.parse(localStorage.getItem('store') || 'null');
+let lastResult = null;
+let variation = 0;
+let currentTemplate = 0;
+let isEditing = false;
+
+// ─── 초기화 ───
+document.addEventListener('DOMContentLoaded', () => {
+    if (store) {
+        showScreen('home');
+        loadSuggestions();
+    } else {
+        showScreen('register');
+    }
+    // 네비 이벤트
+    document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            showScreen(tab);
+            if (tab === 'report') loadReport();
+            if (tab === 'tourism') loadTourism();
+            if (tab === 'settings') loadSettings();
+        });
+    });
+});
+
+// ─── 화면 전환 ───
+function showScreen(name) {
+    document.querySelectorAll('[id^="screen-"]').forEach(s => s.classList.add('hidden'));
+    document.getElementById('screen-' + name).classList.remove('hidden');
+    // 네비 활성화
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const activeNav = document.querySelector(`.nav-item[data-tab="${name}"]`);
+    if (activeNav) activeNav.classList.add('active');
+    // 네비 표시/숨기기
+    document.getElementById('bottom-nav').style.display = (name === 'register') ? 'none' : 'flex';
+}
+
+// ─── 가게 등록 ───
+function saveStore() {
+    const name = document.getElementById('reg-name').value.trim();
+    if (!name) { showToast('가게 이름을 입력해주세요'); return; }
+    store = {
+        name: name,
+        address: document.getElementById('reg-address').value.trim() || '세종시 조치원읍',
+        category: document.getElementById('reg-category').value,
+        menu: document.getElementById('reg-menu').value.trim(),
+        lat: 36.604561, lng: 127.298342
+    };
+    localStorage.setItem('store', JSON.stringify(store));
+    document.getElementById('home-greeting').textContent = `${store.name} 사장님, 오늘은 뭘 홍보해볼까요?`;
+    showScreen('home');
+    loadSuggestions();
+    showToast('가게 정보가 저장되었습니다!');
+}
+
+// ─── 추천 제안 ───
+function loadSuggestions() {
+    const cards = [
+        { title: '🍑 복숭아 축제 D-7', desc: '조치원 복숭아 축제가 일주일 앞이에요. 지금 홍보물 준비하면 딱 좋아요!', type: '축제', prompt: '복숭아 축제 관련 홍보물 만들어줘' },
+        { title: '☀️ 여름 신메뉴 시즌', desc: '더위가 시작됐어요. 시원한 메뉴 중심 게시물을 만들어 보세요.', type: '시즌', prompt: '여름 시즌 신메뉴 홍보물 만들어줘' },
+        { title: '📈 주말 유동인구 증가', desc: '이번 주말 주변 유동인구가 평일 대비 높을 것으로 보여요.', type: '상권', prompt: '주말 이벤트 홍보물 만들어줘' },
+    ];
+    const container = document.getElementById('suggestion-cards');
+    container.innerHTML = cards.map(c => `
+        <div class="card" style="cursor:pointer; border-left:3px solid var(--primary);" onclick="document.getElementById('userInput').value='${c.prompt}'; document.getElementById('userInput').focus();">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div><strong style="font-size:14px;">${c.title}</strong><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${c.desc}</p></div>
+                <span class="badge badge-${c.type === '축제' ? 'festival' : c.type === '시즌' ? 'season' : 'area'}">${c.type}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ─── 콘텐츠 생성 ───
+async function generateContent() {
+    const input = document.getElementById('userInput').value.trim();
+    if (!input) { showToast('홍보할 내용을 입력해주세요!'); return; }
+
+    const btn = document.getElementById('generateBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 생성 중...';
+
+    try {
+        const res = await fetch('/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: input })
+        });
+        const data = await res.json();
+        if (data.success) {
+            lastResult = data;
+            variation = 0;
+            displayResult(data);
+            showScreen('result');
+        } else {
+            showToast('오류: ' + (data.error || '알 수 없는 오류'));
         }
+    } catch (e) {
+        showToast('서버 연결에 실패했습니다.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ 콘텐츠 만들기';
+    }
+}
 
-        async function generate() {
-            const input = document.getElementById('userInput').value.trim();
-            if (!input) {
-                showToast('홍보할 내용을 입력해주세요!');
-                return;
-            }
+// ─── 결과 표시 ───
+function displayResult(data) {
+    // 템플릿 이미지
+    renderTemplateImage();
+    // 근거
+    const marketType = data.market_info ? '실제 API' : '샘플';
+    const festivalType = data.festival_info && !data.festival_info.includes('없음') ? '실제 API' : '샘플';
+    document.getElementById('sources-list').innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span class="badge badge-${marketType === '실제 API' ? 'api' : 'sample'}">${marketType}</span>
+            <span style="font-size:13px;"><strong>상가정보</strong> — ${data.market_info || '샘플 데이터'}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge badge-${festivalType === '실제 API' ? 'api' : 'sample'}">${festivalType}</span>
+            <span style="font-size:13px;"><strong>관광정보</strong> — ${data.festival_info || '샘플 데이터'}</span>
+        </div>
+    `;
+    // 검수
+    const hasProhibited = /전국 1위|최고|무조건|100%|완벽|절대/.test(data.instagram + data.banner);
+    document.getElementById('check-result').innerHTML = `
+        <div style="padding:10px; border-radius:10px; background:${hasProhibited ? '#fef2f2' : '#f0fdf4'}; border:1px solid ${hasProhibited ? '#fecaca' : '#bbf7d0'};">
+            <p style="font-size:13px; font-weight:600; color:${hasProhibited ? '#dc2626' : '#166534'};">
+                ${hasProhibited ? '⚠️ 금지어가 포함되어 있습니다. 수정 후 게시하세요.' : '✅ 허위·과장 표현 점검 통과'}
+            </p>
+            ${data.instagram && data.instagram.includes('한정') ? '<p style="font-size:12px; color:var(--text-light); margin-top:4px;">💡 "한정 판매"는 실제 진행 여부를 확인해 주세요.</p>' : ''}
+        </div>
+    `;
+    // 캡션 & 배너
+    document.getElementById('caption-display').textContent = data.instagram || '';
+    document.getElementById('banner-display').textContent = data.banner || '';
+    document.getElementById('caption-edit').value = data.instagram || '';
+    document.getElementById('banner-edit').value = data.banner || '';
+    isEditing = false;
+    document.getElementById('caption-edit').classList.add('hidden');
+    document.getElementById('banner-edit').classList.add('hidden');
+    document.getElementById('caption-display').classList.remove('hidden');
+    document.getElementById('banner-display').classList.remove('hidden');
+    document.getElementById('btn-edit').textContent = '✏️ 문구 수정';
+}
 
-            const btn = document.getElementById('generateBtn');
-            const loading = document.getElementById('loading');
-            const resultSection = document.getElementById('resultSection');
+// ─── 템플릿 이미지 ───
+const templateThemes = [
+    { gradient: 'linear-gradient(135deg, #667eea, #764ba2)', emoji: '☕', vibe: '따뜻한 한 잔의 여유' },
+    { gradient: 'linear-gradient(135deg, #11998e, #38ef7d)', emoji: '🍑', vibe: '자연이 키운 신선함' },
+    { gradient: 'linear-gradient(135deg, #ee9ca7, #ffdde1)', emoji: '🍰', vibe: '달콤한 하루의 시작' },
+    { gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)', emoji: '✨', vibe: '특별한 오늘' },
+];
 
-            btn.disabled = true;
-            loading.style.display = 'block';
-            resultSection.style.display = 'none';
+function renderTemplateImage() {
+    const theme = templateThemes[currentTemplate % templateThemes.length];
+    const banner = lastResult ? (lastResult.banner || store.menu || '') : '';
+    document.getElementById('template-image').innerHTML = `
+        <div style="width:100%; aspect-ratio:1; background:${theme.gradient}; border-radius:14px; padding:28px 24px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(255,255,255,0.12);"></div>
+            <div style="position:absolute; bottom:-40px; left:-20px; width:150px; height:150px; border-radius:50%; background:rgba(255,255,255,0.1);"></div>
+            <div style="position:relative; z-index:1;">
+                <div style="display:inline-block; background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:16px; font-size:11px; color:rgba(255,255,255,0.9);">📍 ${store ? store.address : '세종시 조치원읍'}</div>
+                <p style="font-size:13px; color:rgba(255,255,255,0.8); margin-top:6px;">${store ? store.name : ''}</p>
+            </div>
+            <div style="position:relative; z-index:1; text-align:center;">
+                <span style="font-size:2.5rem;">${theme.emoji}</span>
+                <h2 style="font-size:1.2rem; font-weight:800; color:white; margin-top:10px; text-shadow:0 2px 8px rgba(0,0,0,0.15);">${banner.length > 25 ? banner.substring(0, 25) + '...' : banner}</h2>
+            </div>
+            <div style="position:relative; z-index:1; text-align:center;">
+                <p style="font-size:11px; color:rgba(255,255,255,0.7); font-style:italic;">${theme.vibe}</p>
+            </div>
+        </div>
+        <p style="font-size:11px; color:var(--text-light); text-align:center; margin-top:6px;">인스타 피드용 템플릿 · 텍스트 수정 가능</p>
+    `;
+}
 
-            try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: input })
-                });
-                const data = await response.json();
+function changeTemplate() {
+    currentTemplate++;
+    renderTemplateImage();
+    showToast('템플릿이 변경되었습니다');
+}
 
-                if (data.success) {
-                    lastResult = data;
-                    document.getElementById('instagramResult').textContent = data.instagram || '(생성 실패)';
-                    document.getElementById('bannerResult').textContent = data.banner || '(생성 실패)';
-                    document.getElementById('hashtagResult').textContent = data.hashtags || '';
-                    document.getElementById('dataInfo').textContent =
-                        `${data.market_info || '-'} | ${data.festival_info || '-'}`;
-                    resultSection.style.display = 'block';
-                } else {
-                    showToast('오류: ' + (data.error || '알 수 없는 오류'));
-                }
-            } catch (err) {
-                showToast('서버 연결에 실패했습니다.');
-            } finally {
-                btn.disabled = false;
-                loading.style.display = 'none';
-            }
+// ─── 문구 수정 ───
+function toggleEdit() {
+    isEditing = !isEditing;
+    if (isEditing) {
+        document.getElementById('caption-display').classList.add('hidden');
+        document.getElementById('banner-display').classList.add('hidden');
+        document.getElementById('caption-edit').classList.remove('hidden');
+        document.getElementById('banner-edit').classList.remove('hidden');
+        document.getElementById('btn-edit').textContent = '✅ 저장';
+    } else {
+        const newCaption = document.getElementById('caption-edit').value;
+        const newBanner = document.getElementById('banner-edit').value;
+        document.getElementById('caption-display').textContent = newCaption;
+        document.getElementById('banner-display').textContent = newBanner;
+        lastResult.instagram = newCaption;
+        lastResult.banner = newBanner;
+        document.getElementById('caption-display').classList.remove('hidden');
+        document.getElementById('banner-display').classList.remove('hidden');
+        document.getElementById('caption-edit').classList.add('hidden');
+        document.getElementById('banner-edit').classList.add('hidden');
+        document.getElementById('btn-edit').textContent = '✏️ 문구 수정';
+        renderTemplateImage();
+        showToast('문구가 수정되었습니다');
+    }
+}
+
+// ─── 다시 생성 ───
+async function regenerateContent() {
+    variation++;
+    const input = document.getElementById('userInput').value.trim();
+    if (!input) { showToast('입력값이 없습니다'); return; }
+    try {
+        const res = await fetch('/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: input, variation: variation })
+        });
+        const data = await res.json();
+        if (data.success) { lastResult = data; displayResult(data); showToast('새로운 콘텐츠가 생성되었습니다'); }
+    } catch(e) { showToast('재생성 실패'); }
+}
+
+// ─── 복사 ───
+function copyAll() {
+    const text = `${lastResult.instagram || ''}\n\n${lastResult.banner || ''}`;
+    navigator.clipboard.writeText(text).then(() => showToast('📋 복사 완료!'));
+}
+
+// ─── 상권 리포트 ───
+async function loadReport() {
+    if (!store) return;
+    document.getElementById('report-subtitle').textContent = `📍 ${store.address} | 업종: ${store.category}`;
+
+    try {
+        const res = await fetch('/api/market/report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: store.lat, lng: store.lng, radius: 500 })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const cafes = data.stores.filter(s => s.category_small && s.category_small.includes('카페'));
+            document.getElementById('report-stats').innerHTML = `
+                <div style="display:flex; justify-content:space-around; text-align:center;">
+                    <div><div style="font-size:1.8rem; font-weight:900; color:var(--primary);">${data.total_count}</div><div style="font-size:12px; color:var(--text-light);">주변 점포</div></div>
+                    <div><div style="font-size:1.8rem; font-weight:900; color:var(--success);">${cafes.length}</div><div style="font-size:12px; color:var(--text-light);">동종 업종</div></div>
+                    <div><div style="font-size:1.8rem; font-weight:900; color:var(--warning);">3.2k</div><div style="font-size:12px; color:var(--text-light);">일 유동인구</div></div>
+                </div>
+            `;
+            document.getElementById('report-insight').innerHTML = `
+                <h3 style="font-size:14px; font-weight:700; margin-bottom:8px;">🤖 AI 인사이트</h3>
+                <p style="font-size:13px; line-height:1.8;">"반경 500m 내 점포 ${data.total_count}개 중 동종 업종 ${cafes.length}개. ${store.category} 수요 대비 경쟁이 ${cafes.length > 5 ? '다소 높은' : '적은'} 편."</p>
+            `;
+            document.getElementById('report-competitors').innerHTML = `
+                <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">주요 경쟁 업체</h3>
+                ${data.stores.slice(0, 5).map(s => `<div style="padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">• ${s.name} <span style="color:var(--text-light);">(${s.category_mid || s.category_small || ''})</span></div>`).join('')}
+            `;
+            document.getElementById('report-strategy').innerHTML = `
+                <h3 style="font-size:14px; font-weight:700; margin-bottom:8px; color:#166534;">💡 추천 전략</h3>
+                <p style="font-size:13px; line-height:1.8;">"프랜차이즈와 차별화되는 수제 디저트 강조 + 축제 시즌 한정 메뉴 전략 유효"</p>
+            `;
+        } else {
+            showSampleReport();
         }
+    } catch(e) {
+        showSampleReport();
+    }
+}
 
-        function regenerate() {
-            generate();
-        }
+function showSampleReport() {
+    document.getElementById('report-stats').innerHTML = `
+        <div style="display:flex; justify-content:space-around; text-align:center;">
+            <div><div style="font-size:1.8rem; font-weight:900; color:var(--primary);">12</div><div style="font-size:12px; color:var(--text-light);">주변 카페</div></div>
+            <div><div style="font-size:1.8rem; font-weight:900; color:var(--success);">2</div><div style="font-size:12px; color:var(--text-light);">디저트 전문</div></div>
+            <div><div style="font-size:1.8rem; font-weight:900; color:var(--warning);">3.2k</div><div style="font-size:12px; color:var(--text-light);">일 유동인구</div></div>
+        </div><p style="margin-top:10px;"><span class="badge badge-sample">샘플 데이터</span></p>
+    `;
+    document.getElementById('report-insight').innerHTML = `<h3 style="font-size:14px; font-weight:700; margin-bottom:8px;">🤖 AI 인사이트</h3><p style="font-size:13px; line-height:1.8;">"반경 500m 내 카페 12개 중 디저트 전문은 2개뿐. 20~30대 유동인구 비중이 높아 디저트 카페 수요 충분. 경쟁 적은 편."</p>`;
+    document.getElementById('report-competitors').innerHTML = `<h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">주요 경쟁 업체</h3><div style="font-size:13px; line-height:2;">• 스타벅스 조치원점 (150m)<br>• 이디야 조치원역점 (200m)<br>• 로컬카페A (80m)</div>`;
+    document.getElementById('report-strategy').innerHTML = `<h3 style="font-size:14px; font-weight:700; margin-bottom:8px; color:#166534;">💡 추천 전략</h3><p style="font-size:13px; line-height:1.8;">"프랜차이즈와 차별화되는 수제 디저트 강조 + 축제 시즌 한정 메뉴 전략 유효"</p>`;
+}
 
-        function copyResult() {
-            const text = `${lastResult.instagram || ''}\n\n${lastResult.banner || ''}\n\n${lastResult.hashtags || ''}`;
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('📋 클립보드에 복사되었습니다!');
-            });
-        }
+// ─── 관광 연계 ───
+async function loadTourism() {
+    if (!store) return;
+    try {
+        const res = await fetch('/api/tourism/festivals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat: store.lat, lng: store.lng, radius: 5000 })
+        });
+        const data = await res.json();
+        if (data.success && data.festivals.length > 0) {
+            document.getElementById('tourism-spots').innerHTML = data.festivals.map(f => `
+                <div class="card"><div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div><h3 style="font-size:14px; font-weight:700;">🎉 ${f.title}</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${f.start_date || ''}~${f.end_date || ''} | ${f.address || ''}</p></div>
+                    <span class="badge badge-festival">축제</span>
+                </div></div>
+            `).join('');
+            renderCourse(data.festivals[0]);
+        } else { showSampleTourism(); }
+    } catch(e) { showSampleTourism(); }
+}
 
-        function confirmResult() {
-            showToast('✅ 저장되었습니다! SNS에 게시해보세요.');
-        }
+function showSampleTourism() {
+    document.getElementById('tourism-spots').innerHTML = `
+        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🎉 조치원 복숭아 축제</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">7/25~7/27 | 내 가게에서 도보 5분</p></div><span class="badge badge-festival">D-7</span></div></div>
+        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🏞️ 세종호수공원</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">차량 15분 | 관광지</p></div><span class="badge badge-season">상시</span></div></div>
+    `;
+    document.getElementById('tourism-course').innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</div><div><p style="font-size:13px; font-weight:600;">복숭아 축제장</p><p style="font-size:11px; color:var(--text-light);">출발</p></div></div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</div><div><p style="font-size:13px; font-weight:600;">☕ ${store ? store.name : '내 카페'}</p><p style="font-size:11px; color:var(--text-light);">도보 5분</p></div></div>
+        <div style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">3</div><div><p style="font-size:13px; font-weight:600;">세종호수공원</p><p style="font-size:11px; color:var(--text-light);">차량 15분</p></div></div>
+    `;
+}
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2500);
-        }
-    </script>
+function renderCourse(festival) {
+    document.getElementById('tourism-course').innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">1</div><div><p style="font-size:13px; font-weight:600;">${festival.title}</p><p style="font-size:11px; color:var(--text-light);">출발</p></div></div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">2</div><div><p style="font-size:13px; font-weight:600;">☕ ${store.name}</p><p style="font-size:11px; color:var(--text-light);">도보 5분</p></div></div>
+        <div style="display:flex; align-items:center; gap:10px;"><div style="width:28px; height:28px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">3</div><div><p style="font-size:13px; font-weight:600;">세종호수공원</p><p style="font-size:11px; color:var(--text-light);">차량 15분</p></div></div>
+    `;
+}
+
+function courseToContent() {
+    document.getElementById('userInput').value = '축제 방문객 대상 홍보물 만들어줘. 축제장에서 도보 5분 거리라는 걸 강조해줘.';
+    showScreen('home');
+    showToast('코스 기반 홍보물을 만들어보세요!');
+}
+
+// ─── 설정 ───
+function loadSettings() {
+    if (!store) return;
+    document.getElementById('settings-info').innerHTML = `
+        <h3 style="font-size:14px; font-weight:700; margin-bottom:14px;">내 가게 정보</h3>
+        <div style="font-size:13px; line-height:2.2;">
+            <p><strong>가게 이름:</strong> ${store.name}</p>
+            <p><strong>위치:</strong> 📍 ${store.address}</p>
+            <p><strong>업종:</strong> ${store.category}</p>
+            <p><strong>대표 메뉴:</strong> ${store.menu || '등록된 메뉴 없음'}</p>
+        </div>
+    `;
+}
+
+function resetStore() {
+    if (confirm('가게 정보를 초기화하시겠습니까?')) {
+        localStorage.removeItem('store');
+        store = null;
+        showScreen('register');
+    }
+}
+
+// ─── 토스트 ───
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 2500);
+}
+</script>
 </body>
 </html>

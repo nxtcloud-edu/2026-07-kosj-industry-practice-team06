@@ -86,6 +86,32 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/api/market/report", methods=["POST"])
+def api_market_report():
+    """상권 분석 API (프론트엔드 리포트 탭용)"""
+    data = request.get_json()
+    lat = data.get("lat", DEFAULT_LAT)
+    lng = data.get("lng", DEFAULT_LNG)
+    radius = data.get("radius", 500)
+
+    market_data = get_nearby_stores(lat, lng, radius)
+    return jsonify({
+        "success": True,
+        "total_count": market_data["total"],
+        "stores": market_data["stores"],
+    })
+
+
+@app.route("/api/tourism/festivals", methods=["POST"])
+def api_tourism_festivals():
+    """관광 연계 API (프론트엔드 관광 탭용)"""
+    festivals = get_nearby_festivals()
+    return jsonify({
+        "success": True,
+        "festivals": festivals,
+    })
+
+
 @app.route("/generate", methods=["POST"])
 def generate_marketing():
     """
