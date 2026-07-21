@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>성과 보고서 — 세종경제관광진흥원</title>
+    <style>
+        /* ===== 팀원 templates/index.html 스타일 그대로 (admin과 동일) ===== */
+        :root {
+            --primary: #667eea; --primary-dark: #5a6fd6; --success: #10b981;
+            --bg: #f5f5f7; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; word-break: keep-all; }
+        html { overflow-y: scroll; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); max-width: 480px; margin: 0 auto;
+            min-height: 100vh; padding-bottom: 80px;
+        }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: var(--card);
+            border-top: 1px solid var(--border); display: flex;
+            justify-content: space-around; padding: 10px 0 18px; z-index: 100;
+        }
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 11px; color: var(--text-light); text-decoration: none;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item .icon { font-size: 20px; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; height: 88px;
+                       padding: 0 20px; display: flex; flex-direction: column; justify-content: center; }
+        .page-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .page-header p { font-size: 0.85rem; color: rgba(255,255,255,0.9); margin-top: 4px;
+                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-sample { background: #fef3c7; color: #92400e; }
+
+        /* 도구막대 (인쇄 시 숨김) */
+        .toolbar { padding: 12px 16px 0; display: flex; gap: 8px; }
+        .toolbar a, .toolbar button { font-size: 13px; padding: 9px 14px; border-radius: 10px;
+                   border: 1.5px solid var(--border); background: #fff; color: var(--text);
+                   text-decoration: none; cursor: pointer; font-weight: 600; }
+        .toolbar .primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; }
+        .toolbar .back { margin-left: auto; border: none; color: var(--text-light); }
+
+        /* 대시보드 전용 (admin과 동일) */
+        .sec { padding: 0 16px; margin: 18px 0 8px; font-size: 14px; font-weight: 700; }
+        .stat-row { display: flex; gap: 10px; margin: 12px 16px; flex-wrap: wrap; }
+        .stat-box { flex: 1; min-width: 100px; background: var(--card); border-radius: 16px; padding: 16px 8px;
+                    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .stat-box .num { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .stat-box .label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+        .eff-row { display: flex; }
+        .eff-box { flex: 1; text-align: center; }
+        .eff-box .n { font-size: 1.4rem; font-weight: 800; color: #764ba2; }
+        .eff-box .l { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+        .card-text { font-size: 14px; line-height: 1.7; }
+        .note { font-size: 12px; color: #94a3b8; margin-top: 12px; line-height: 1.5; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0;
+               border-bottom: 1px solid var(--border); font-size: 13px; }
+        .row:last-child { border-bottom: none; }
+        .row .v { font-weight: 700; color: var(--primary); }
+        .track { height: 12px; background: #eef2ff; border-radius: 6px; overflow: hidden; }
+        .track .fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 6px; }
+        .empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 14px; }
+
+        @media print {
+            html, body { overflow: visible; }
+            body { background: #fff; max-width: none; padding: 0; }
+            .toolbar, .bottom-nav { display: none; }
+            .card { box-shadow: none; border: 1px solid var(--border); break-inside: avoid; }
+            .page-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 16mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>성과 보고서</h1>
+        <p>세종경제관광진흥원 · 소상공인 마케팅 지원사업</p>
+    </div>
+
+    <div class="toolbar">
+        <button class="primary" onclick="window.print()">📄 PDF로 저장</button>
+        <a href="/api/admin/export.csv">📊 엑셀로 저장</a>
+    </div>
+
+    <div class="stat-row">
+        <div class="stat-box"><div class="num" id="kTotal">-</div><div class="label">누적 게시</div></div>
+        <div class="stat-box"><div class="num" id="kActive">-</div><div class="label">참여 가게</div></div>
+        <div class="stat-box"><div class="num" id="kLinked">-</div><div class="label">축제 연계</div></div>
+        <div class="stat-box"><div class="num" id="kStores">-</div><div class="label">등록 가게</div></div>
+    </div>
+
+    <p class="sec">종합 분석</p>
+    <div class="card"><div class="card-text" id="aiSummary">집계 중…</div></div>
+
+    <p class="sec">사업 목표 대비 달성률</p>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+            <span style="font-size:1.8rem; font-weight:800; color:var(--primary);" id="gOverall">-</span>
+            <span style="font-size:13px; font-weight:700; color:var(--success);" id="gStatus">-</span>
+        </div>
+        <div class="track"><div class="fill" id="gBar" style="width:0%"></div></div>
+        <div id="gList" style="margin-top:8px;"></div>
+    </div>
+
+    <p class="sec">추정 성과 <span class="badge badge-sample">추정치</span></p>
+    <div class="card">
+        <div class="eff-row">
+            <div class="eff-box"><div class="n" id="eViews">-</div><div class="l">추정 조회·도달</div></div>
+            <div class="eff-box"><div class="n" id="eVisits">-</div><div class="l">추정 방문</div></div>
+            <div class="eff-box"><div class="n" id="eCoupons">-</div><div class="l">쿠폰 사용</div></div>
+        </div>
+        <div class="note">※ SNS 인사이트·POS 미연동 단계의 추정치입니다. 실 서비스 시 실측값으로 대체됩니다.</div>
+    </div>
+
+    <p class="sec">업종별 게시 분포</p>
+    <div class="card" id="byCategory"><div class="empty">불러오는 중…</div></div>
+
+    <p class="sec">참여 가게별 활동</p>
+    <div class="card" id="byStore"><div class="empty">불러오는 중…</div></div>
+
+    <p class="sec">관광 연계 효과 (축제-상권)</p>
+    <div class="card"><div class="card-text" id="tourSummary">-</div></div>
+
+    <nav class="bottom-nav">
+        <a class="nav-item active" href="/admin"><span class="icon">📊</span>대시보드</a>
+        <a class="nav-item" href="/admin/stores"><span class="icon">🏬</span>가게</a>
+        <a class="nav-item" href="/admin/insights"><span class="icon">💡</span>인사이트</a>
+        <a class="nav-item" href="/admin/calendar"><span class="icon">📅</span>캘린더</a>
+    </nav>
+
+    <script>
+        function today(){
+            const d = new Date(), p = n => String(n).padStart(2,'0');
+            return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+        }
+        async function load(){
+            const g = await (await fetch('/api/admin/goals')).json();
+            document.getElementById('gOverall').textContent = g.overall + '%';
+            document.getElementById('gStatus').textContent = g.status;
+            document.getElementById('gBar').style.width = g.overall + '%';
+            document.getElementById('gList').innerHTML = g.goals.map(x =>
+                `<div class="row"><span>${x.label}${x.estimate?' (추정)':''} · 목표 ${x.target.toLocaleString()}${x.unit}</span>`
+                + `<span class="v">${x.current.toLocaleString()}${x.unit} · ${x.rate}%</span></div>`).join('');
+
+            const d = await (await fetch('/api/admin/stats')).json();
+            const ef = d.effect || {};
+            document.getElementById('kTotal').textContent = d.total_posts;
+            document.getElementById('kActive').textContent = d.active_stores;
+            document.getElementById('kLinked').textContent = d.festival_linked_posts;
+            document.getElementById('kStores').textContent = d.stores_total;
+
+            document.getElementById('eViews').textContent = (ef.total_views||0).toLocaleString();
+            document.getElementById('eVisits').textContent = (ef.total_visits||0).toLocaleString();
+            document.getElementById('eCoupons').textContent = (ef.total_coupons||0).toLocaleString();
+
+            const rate = d.total_posts ? Math.round(d.festival_linked_posts / d.total_posts * 100) : 0;
+            document.getElementById('aiSummary').textContent = d.total_posts
+                ? `${today()} 기준, 관내 ${d.active_stores}개 가게가 총 ${d.total_posts}건의 홍보 콘텐츠를 제작·게시하였습니다. 이 중 ${d.festival_linked_posts}건(${rate}%)이 지역 축제와 연계되었으며, 추정 조회 ${(ef.total_views||0).toLocaleString()}회·추정 방문 ${ef.total_visits||0}건의 효과가 발생한 것으로 추정됩니다. 별도 조사 없이 지원 사업의 실행 성과를 정량 수치로 확인할 수 있습니다.`
+                : '아직 집계된 게시 활동이 없습니다.';
+
+            const max = Math.max(1, ...d.by_category.map(c => c.count));
+            document.getElementById('byCategory').innerHTML = d.by_category.length
+                ? d.by_category.map(c => `<div class="row"><span>${c.category}</span><span class="v">${c.count}건 (${d.total_posts?Math.round(c.count/d.total_posts*100):0}%)</span></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            document.getElementById('byStore').innerHTML = (d.by_store||[]).length
+                ? d.by_store.map(s => `<div class="row"><span>${s.name} · ${s.category}</span><span class="v">${s.posts}건${s.linked?' (연계 '+s.linked+')':''}</span></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            document.getElementById('tourSummary').textContent =
+                `전체 ${d.total_posts}건 중 ${d.festival_linked_posts}건(${rate}%)이 지역 축제와 연계되어 게시되었습니다. 축제 연계 콘텐츠는 일반 게시 대비 게시물당 추정 조회가 ${ef.uplift_pct||0}% 높아, 관광 예산이 상권 홍보로 이어진 효과를 데이터로 확인할 수 있습니다.`;
+        }
+        load();
+    </script>
+</body>
+</html>

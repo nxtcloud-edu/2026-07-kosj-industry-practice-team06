@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>참여 가게 — 세종경제관광진흥원</title>
+    <style>
+        /* ===== 팀원 templates/index.html 스타일 그대로 (admin과 동일) ===== */
+        :root {
+            --primary: #667eea; --primary-dark: #5a6fd6; --success: #10b981;
+            --bg: #f5f5f7; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; word-break: keep-all; }
+        html { overflow-y: scroll; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg); color: var(--text); max-width: 480px; margin: 0 auto;
+            min-height: 100vh; padding-bottom: 80px;
+        }
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: var(--card);
+            border-top: 1px solid var(--border); display: flex;
+            justify-content: space-around; padding: 10px 0 18px; z-index: 100;
+        }
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 11px; color: var(--text-light); cursor: pointer;
+            border: none; background: none; text-decoration: none;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item .icon { font-size: 20px; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; height: 88px;
+                       padding: 0 20px; display: flex; flex-direction: column; justify-content: center; }
+        .page-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .page-header p { font-size: 0.85rem; color: rgba(255,255,255,0.9); margin-top: 4px;
+                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-api { background: #dcfce7; color: #166534; }
+
+        .store-item { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .store-item:last-child { border-bottom: none; }
+        .store-item .info { flex: 1; }
+        .store-item .nm { font-size: 14px; font-weight: 600; }
+        .store-item .addr { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+        .store-item .posts { text-align: right; }
+        .store-item .posts .n { font-size: 16px; font-weight: 800; color: var(--primary); }
+        .store-item .posts .l { font-size: 11px; color: var(--text-light); }
+        .empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 14px; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>참여 가게</h1>
+        <p id="sub">세종경제관광진흥원 · 관내 전체</p>
+    </div>
+
+    <div class="card" id="storeList"><div class="empty">불러오는 중…</div></div>
+
+    <nav class="bottom-nav">
+        <a class="nav-item" href="/admin"><span class="icon">📊</span>대시보드</a>
+        <a class="nav-item active" href="/admin/stores"><span class="icon">🏬</span>가게</a>
+        <a class="nav-item" href="/admin/insights"><span class="icon">💡</span>인사이트</a>
+        <a class="nav-item" href="/admin/calendar"><span class="icon">📅</span>캘린더</a>
+    </nav>
+
+    <script>
+        async function load(){
+            const d = await (await fetch('/api/admin/stores')).json();
+            document.getElementById('sub').textContent = `세종경제관광진흥원 · 등록 가게 ${d.total}곳`;
+            const box = document.getElementById('storeList');
+            box.innerHTML = (d.stores && d.stores.length)
+                ? d.stores.map(s => `
+                    <div class="store-item">
+                        <div class="info">
+                            <div class="nm">${s.name} <span class="badge badge-api">${s.category}</span></div>
+                            <div class="addr">${s.address || ''}${s.linked ? ' · 축제연계 ' + s.linked + '건' : ''}</div>
+                        </div>
+                        <div class="posts"><div class="n">${s.posts}</div><div class="l">게시</div></div>
+                    </div>`).join('')
+                : '<div class="empty">등록된 가게가 없습니다.</div>';
+        }
+        load();
+    </script>
+</body>
+</html>

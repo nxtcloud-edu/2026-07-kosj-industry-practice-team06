@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>성과 대시보드 — 세종경제관광진흥원</title>
+    <style>
+        :root {
+            --primary: #667eea; --primary-dark: #5a6fd6; --success: #10b981;
+            --bg: #f5f5f7; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; word-break: keep-all; }
+        html { overflow-y: scroll; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+               background: var(--bg); color: var(--text); max-width: 480px; margin: 0 auto;
+               min-height: 100vh; padding-bottom: 80px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+            width: 100%; max-width: 480px; background: var(--card); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0 18px; z-index: 100; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+            font-size: 11px; color: var(--text-light); text-decoration: none; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item .icon { font-size: 20px; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin: 12px 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; height: 88px;
+            padding: 0 20px; display: flex; flex-direction: column; justify-content: center; }
+        .page-header h1 { font-size: 1.3rem; font-weight: 800; }
+        .page-header p { font-size: 0.85rem; color: rgba(255,255,255,0.9); margin-top: 4px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-api { background: #dcfce7; color: #166534; }
+        .badge-sample { background: #fef3c7; color: #92400e; }
+        .sec { padding: 0 16px; margin: 18px 0 8px; font-size: 14px; font-weight: 700;
+            display: flex; justify-content: space-between; align-items: center; }
+        .sec .edit { font-size: 12px; font-weight: 600; color: var(--primary); cursor: pointer; }
+        .btn { display: block; width: calc(100% - 32px); margin: 8px 16px 0; padding: 14px; border-radius: 12px;
+            font-size: 15px; font-weight: 600; border: none; cursor: pointer; text-align: center; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
+        .btn-outline { background: #fff; border: 1.5px solid var(--border); color: var(--text); }
+
+        .stat-row { display: flex; gap: 10px; margin: 12px 16px; }
+        .stat-box { flex: 1; background: var(--card); border-radius: 16px; padding: 16px 8px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .stat-box .num { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .stat-box .label { font-size: 12px; color: var(--text-light); margin-top: 4px; }
+
+        /* 목표 달성률 */
+        .goal-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .goal-top .rate { font-size: 2rem; font-weight: 800; color: var(--primary); }
+        .goal-top .status { font-size: 13px; font-weight: 700; color: var(--success); }
+        .track { height: 12px; background: #eef2ff; border-radius: 6px; overflow: hidden; }
+        .track .fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 6px; }
+        .goal { margin-top: 14px; }
+        .goal .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .goal .name { font-size: 13px; font-weight: 600; }
+        .goal .val { font-size: 13px; color: var(--text-light); }
+        .goal .val b { color: var(--primary); font-size: 15px; }
+        .goal input { width: 78px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; text-align: right; }
+        .goal .pct { font-size: 12px; font-weight: 700; color: var(--text-light); margin-top: 4px; text-align: right; }
+        .edit-actions { display: none; gap: 8px; margin-top: 14px; }
+        .edit-actions.show { display: flex; }
+        .edit-actions button { flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: #fff; }
+        .edit-actions .save { background: var(--primary); color: #fff; border: none; }
+
+        /* 추이 */
+        .trend { display: flex; align-items: flex-end; gap: 8px; height: 110px; padding-top: 6px; }
+        .trend .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+        .trend .tbar { width: 60%; background: linear-gradient(180deg, #667eea, #764ba2); border-radius: 6px 6px 0 0; min-height: 4px; }
+        .trend .tn { font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 3px; }
+        .trend .tm { font-size: 10px; color: var(--text-light); margin-top: 5px; }
+
+        .eff-row { display: flex; }
+        .eff-box { flex: 1; text-align: center; }
+        .eff-box .n { font-size: 1.4rem; font-weight: 800; color: #764ba2; }
+        .eff-box .l { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+        .note { font-size: 12px; color: #94a3b8; margin-top: 12px; line-height: 1.5; }
+        .uplift { font-size: 13px; font-weight: 600; color: #166534; background: #dcfce7; border-radius: 12px; padding: 12px; margin-bottom: 14px; line-height: 1.5; }
+        .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+        .bar-row .name { width: 84px; font-size: 13px; flex-shrink: 0; }
+        .bar-wrap { flex: 1; background: #eef2ff; border-radius: 8px; height: 20px; overflow: hidden; }
+        .bar { height: 100%; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; }
+        .bar.soft { background: #c7d0f5; }
+        .bar-row .cnt { width: 38px; text-align: right; font-size: 13px; font-weight: 700; color: var(--primary); }
+        .store-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .store-item:last-child { border-bottom: none; }
+        .store-item .info { flex: 1; }
+        .store-item .nm { font-size: 14px; font-weight: 600; }
+        .store-item .addr { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .store-item .posts { font-size: 16px; font-weight: 800; color: var(--primary); }
+        .post-item { padding: 9px 0; border-bottom: 1px solid var(--border); }
+        .post-item:last-child { border-bottom: none; }
+        .post-item .q { font-size: 13px; }
+        .post-item .meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
+        .empty { font-size: 13px; color: #94a3b8; text-align: center; padding: 14px; }
+        .card-text { font-size: 14px; line-height: 1.7; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>성과 대시보드</h1>
+        <p>세종경제관광진흥원 · 소상공인 마케팅 지원사업</p>
+    </div>
+
+    <div class="stat-row">
+        <div class="stat-box"><div class="num" id="kTotal">-</div><div class="label">누적 게시</div></div>
+        <div class="stat-box"><div class="num" id="kActive">-</div><div class="label">참여 가게</div></div>
+        <div class="stat-box"><div class="num" id="kLinked">-</div><div class="label">축제 연계</div></div>
+    </div>
+
+    <a class="btn btn-primary" href="/admin/report" style="margin-top:4px;">📄 성과 보고서 내보내기 (PDF·엑셀)</a>
+
+    <p class="sec">사업 목표 달성률 <span class="edit" id="editBtn" onclick="toggleEdit()">✏️ 목표 수정</span></p>
+    <div class="card">
+        <div class="goal-top">
+            <span class="rate" id="gOverall">-</span>
+            <span class="status" id="gStatus">-</span>
+        </div>
+        <div class="track"><div class="fill" id="gBar" style="width:0%"></div></div>
+        <div id="gList"></div>
+        <div class="edit-actions" id="editActions">
+            <button onclick="cancelEdit()">취소</button>
+            <button class="save" onclick="saveGoals()">저장</button>
+        </div>
+    </div>
+
+    <p class="sec">월별 게시 추이</p>
+    <div class="card"><div class="trend" id="trend"><div class="empty">불러오는 중…</div></div></div>
+
+    <p class="sec">추정 성과 <span class="badge badge-sample">추정치</span></p>
+    <div class="card">
+        <div class="eff-row">
+            <div class="eff-box"><div class="n" id="eViews">-</div><div class="l">추정 조회·도달</div></div>
+            <div class="eff-box"><div class="n" id="eVisits">-</div><div class="l">추정 방문</div></div>
+            <div class="eff-box"><div class="n" id="eCoupons">-</div><div class="l">쿠폰 사용</div></div>
+        </div>
+        <div class="note">※ SNS 인사이트·POS 미연동 단계의 추정치입니다. 실 서비스 시 실측값으로 대체됩니다.</div>
+    </div>
+
+    <p class="sec">축제 연계 효과 <span class="badge badge-sample">추정</span></p>
+    <div class="card">
+        <div class="uplift" id="upliftLine">집계 중…</div>
+        <div class="bar-row"><div class="name">🎉 축제연계</div>
+            <div class="bar-wrap"><div class="bar" id="barLinked"></div></div><div class="cnt" id="valLinked">-</div></div>
+        <div class="bar-row"><div class="name">일반 게시</div>
+            <div class="bar-wrap"><div class="bar soft" id="barNormal"></div></div><div class="cnt" id="valNormal">-</div></div>
+        <div class="note">게시물당 평균 추정 조회수 — 상권+관광 결합의 효과 확인</div>
+    </div>
+
+    <p class="sec">업종별 게시 분포</p>
+    <div class="card" id="byCategory"><div class="empty">불러오는 중…</div></div>
+
+    <p class="sec">참여 가게별 활동</p>
+    <div class="card" id="byStore"><div class="empty">불러오는 중…</div></div>
+
+    <p class="sec">최근 게시 활동</p>
+    <div class="card" id="recent"><div class="empty">불러오는 중…</div></div>
+
+    <nav class="bottom-nav">
+        <a class="nav-item active" href="/admin"><span class="icon">📊</span>대시보드</a>
+        <a class="nav-item" href="/admin/stores"><span class="icon">🏬</span>가게</a>
+        <a class="nav-item" href="/admin/insights"><span class="icon">💡</span>인사이트</a>
+        <a class="nav-item" href="/admin/calendar"><span class="icon">📅</span>캘린더</a>
+    </nav>
+
+    <script>
+        let goalsData = null, editing = false;
+
+        async function load(){
+            const d = await (await fetch('/api/admin/stats')).json();
+            document.getElementById('kTotal').textContent = d.total_posts;
+            document.getElementById('kActive').textContent = d.active_stores;
+            document.getElementById('kLinked').textContent = d.festival_linked_posts;
+
+            const ef = d.effect || {};
+            document.getElementById('eViews').textContent = (ef.total_views||0).toLocaleString();
+            document.getElementById('eVisits').textContent = (ef.total_visits||0).toLocaleString();
+            document.getElementById('eCoupons').textContent = (ef.total_coupons||0).toLocaleString();
+            const lv = ef.linked?.avg_views || 0, nv = ef.normal?.avg_views || 0, mx = Math.max(1, lv, nv);
+            document.getElementById('barLinked').style.width = Math.round(lv/mx*100) + '%';
+            document.getElementById('barNormal').style.width = Math.round(nv/mx*100) + '%';
+            document.getElementById('valLinked').textContent = lv.toLocaleString();
+            document.getElementById('valNormal').textContent = nv.toLocaleString();
+            document.getElementById('upliftLine').textContent = (ef.uplift_pct > 0)
+                ? `축제 연계 콘텐츠가 일반 게시보다 게시물당 추정 조회 ${ef.uplift_pct}% 높습니다.`
+                : '축제 연계·일반 게시 효과를 비교합니다.';
+
+            const tr = d.trend || [], tmax = Math.max(1, ...tr.map(t => t.count));
+            document.getElementById('trend').innerHTML = tr.length
+                ? tr.map(t => `<div class="col"><div class="tn">${t.count}</div>
+                    <div class="tbar" style="height:${Math.round(t.count/tmax*80)}%"></div>
+                    <div class="tm">${t.ym.slice(5)}월</div></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            const cmax = Math.max(1, ...d.by_category.map(c => c.count));
+            document.getElementById('byCategory').innerHTML = d.by_category.length
+                ? d.by_category.map(c => `<div class="bar-row"><div class="name">${c.category}</div>
+                    <div class="bar-wrap"><div class="bar" style="width:${Math.round(c.count/cmax*100)}%"></div></div>
+                    <div class="cnt">${c.count}</div></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            document.getElementById('byStore').innerHTML = (d.by_store||[]).length
+                ? d.by_store.map(s => `<div class="store-item"><div class="info">
+                    <div class="nm">${s.name} <span class="badge badge-api">${s.category}</span></div>
+                    <div class="addr">${s.address||''}${s.linked?' · 축제연계 '+s.linked+'건':''}</div></div>
+                    <div class="posts">${s.posts}</div></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            document.getElementById('recent').innerHTML = d.recent.length
+                ? d.recent.map(x => `<div class="post-item"><div class="q">${x.store_name} · ${x.user_input}</div>
+                    <div class="meta">${x.category} · ${x.created_at.replace('T',' ')}${x.festival_linked?' · 축제연계':''}</div></div>`).join('')
+                : '<div class="empty">데이터 없음</div>';
+
+            loadGoals();
+        }
+
+        async function loadGoals(){
+            goalsData = await (await fetch('/api/admin/goals')).json();
+            renderGoals();
+        }
+        function renderGoals(){
+            const d = goalsData;
+            document.getElementById('gOverall').textContent = d.overall + '%';
+            document.getElementById('gStatus').textContent = d.status;
+            document.getElementById('gBar').style.width = d.overall + '%';
+            document.getElementById('gList').innerHTML = d.goals.map(g => `
+                <div class="goal">
+                    <div class="top">
+                        <span class="name">${g.label} ${g.estimate?'<span class="badge badge-sample">추정</span>':''}</span>
+                        <span class="val">${editing
+                            ? `<input type="number" data-key="${g.key}" value="${g.target}"> ${g.unit}`
+                            : `<b>${g.current.toLocaleString()}</b> / ${g.target.toLocaleString()}${g.unit}`}</span>
+                    </div>
+                    <div class="track"><div class="fill" style="width:${g.rate}%"></div></div>
+                    <div class="pct">달성률 ${g.rate}%</div>
+                </div>`).join('');
+            document.getElementById('editActions').classList.toggle('show', editing);
+            document.getElementById('editBtn').style.display = editing ? 'none' : 'inline';
+        }
+        function toggleEdit(){ editing = true; renderGoals(); }
+        function cancelEdit(){ editing = false; renderGoals(); }
+        async function saveGoals(){
+            const targets = {};
+            document.querySelectorAll('#gList input').forEach(i => targets[i.dataset.key] = i.value);
+            await fetch('/api/admin/goals/targets', { method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ targets }) });
+            editing = false;
+            await loadGoals();
+        }
+
+        load();
+    </script>
+</body>
+</html>

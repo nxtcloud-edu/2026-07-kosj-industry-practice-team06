@@ -32,6 +32,21 @@
 | SFR-003 | 관광 연계 추천 | 반경 내 관광지·축제 자동 매칭 + 방문 코스 구성 |
 | SFR-004 | 시즌·이벤트 선제 제안 | 축제 일정 기반 "D-7, 지금 준비하세요" 카드 |
 | COR-001 | 게시 전 검수 | 금지어 자동 필터링 + 생성 근거 데이터 표시 |
+| SFR-006 | 성과 대시보드 | 발주기관(진흥원)용 관내 성과 집계·목표 달성률·정책 인사이트 |
+
+## 발주기관(진흥원) 성과 대시보드
+
+소상공인 앱과 별개로, 사업을 발주한 **세종경제관광진흥원 담당자**가 관내 전체 성과를 집계·관리하는 관리자 화면입니다. 소상공인이 콘텐츠를 확정·저장하면 같은 DB를 통해 대시보드 수치에 반영됩니다.
+
+| 화면 | 경로 | 내용 |
+|------|------|------|
+| 성과 대시보드 | `/admin` | 게시·참여·효과 집계, 목표 달성률, 월별 추이 |
+| 참여 가게 | `/admin/stores` | 관내 참여 가게 목록 |
+| 정책 인사이트 | `/admin/insights` | 업종·시즌별 수요 (다음 사업 기획 근거) |
+| 시즌·축제 캘린더 | `/admin/calendar` | 다가오는 축제 D-day (선제 지원 계획) |
+| 성과 보고서 | `/admin/report` | PDF·엑셀 내보내기 |
+
+> 목표 달성률의 KPI 목표치는 화면에서 담당자가 직접 설정할 수 있습니다. 조회·방문 등 추정 지표는 SNS·POS 미연동 단계의 추정치이며 화면에 별도 표기합니다.
 
 ## 기술 스택
 
@@ -55,14 +70,17 @@
 │   │   │   ├── content.py      ← 콘텐츠 생성 API (SFR-002)
 │   │   │   ├── market.py       ← 상권 분석 API (SFR-001)
 │   │   │   ├── tourism.py      ← 관광 연계 API (SFR-003)
-│   │   │   └── stores.py       ← 가게 관리 API (DAR-003)
+│   │   │   ├── stores.py       ← 가게 관리 API (DAR-003)
+│   │   │   └── admin.py        ← 발주기관 대시보드 API (SFR-006)
 │   │   └── services/
 │   │       ├── llm.py          ← Gemini 호출 (레거시)
 │   │       ├── filter.py       ← 금지어 필터링 (COR-001)
 │   │       ├── market_api.py   ← 상권정보 API 연동
 │   │       └── tour_api.py     ← TourAPI 연동
+│   ├── web/                    ← 진흥원 대시보드 화면 (HTML, FastAPI 직접 서빙)
+│   ├── seed_demo.py            ← 시연용 데모 데이터 시드
 │   ├── requirements.txt
-│   ├── store.db                ← SQLite DB (자동 생성)
+│   ├── store.db                ← SQLite DB (시연용 데모 데이터 포함)
 │   └── .env.example
 ├── frontend/                   ← Next.js 프론트엔드 (메인 UI)
 │   ├── app/
@@ -107,6 +125,8 @@ npm run dev
 브라우저에서 http://localhost:3000 접속 (모바일 뷰 권장)
 
 > FastAPI(8000)와 Next.js(3000)를 동시에 실행해야 합니다. Next.js가 `/api/*` 요청을 FastAPI로 프록시합니다.
+
+> **진흥원 성과 대시보드**는 FastAPI가 직접 서빙합니다 — http://localhost:8000/admin (Next.js 불필요). 시연용 데모 데이터는 `store.db`에 포함되어 있으며, 초기화하려면 `python seed_demo.py`를 실행합니다.
 
 ## 환경변수
 
