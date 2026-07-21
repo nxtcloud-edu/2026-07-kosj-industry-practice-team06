@@ -97,7 +97,12 @@
         </div>
         <div style="margin-bottom: 14px;">
             <label>대표 메뉴 (선택)</label>
-            <input type="text" id="reg-menu" placeholder="예: 복숭아 케이크 8000원">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                <input type="text" id="reg-menu-name" placeholder="메뉴명" style="flex:2;">
+                <input type="text" id="reg-menu-price" placeholder="가격" style="flex:1;">
+                <button onclick="addMenu()" style="padding:10px 14px; border-radius:10px; border:1.5px solid var(--border); background:white; cursor:pointer; font-size:16px;">+</button>
+            </div>
+            <div id="reg-menu-list" style="font-size:13px; color:var(--text-light);"></div>
         </div>
         <button class="btn btn-primary" onclick="saveStore()">저장하고 시작하기</button>
     </div>
@@ -239,6 +244,34 @@ let lastResult = null;
 let variation = 0;
 let currentTemplate = 0;
 let isEditing = false;
+let registeredMenus = [];
+
+// ─── 메뉴 추가 ───
+function addMenu() {
+    const name = document.getElementById('reg-menu-name').value.trim();
+    const price = document.getElementById('reg-menu-price').value.trim();
+    if (!name) return;
+    registeredMenus.push({ name, price: price || '' });
+    document.getElementById('reg-menu-name').value = '';
+    document.getElementById('reg-menu-price').value = '';
+    renderMenuList();
+}
+
+function removeMenu(idx) {
+    registeredMenus.splice(idx, 1);
+    renderMenuList();
+}
+
+function renderMenuList() {
+    const container = document.getElementById('reg-menu-list');
+    if (registeredMenus.length === 0) { container.innerHTML = ''; return; }
+    container.innerHTML = registeredMenus.map((m, i) =>
+        `<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border);">
+            <span>${m.name}${m.price ? ' ' + Number(m.price).toLocaleString() + '원' : ''}</span>
+            <button onclick="removeMenu(${i})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px;">✕</button>
+        </div>`
+    ).join('');
+}
 
 // ─── 초기화 ───
 document.addEventListener('DOMContentLoaded', () => {
@@ -280,7 +313,8 @@ function saveStore() {
         name: name,
         address: document.getElementById('reg-address').value.trim() || '세종시 조치원읍',
         category: document.getElementById('reg-category').value,
-        menu: document.getElementById('reg-menu').value.trim(),
+        menus: registeredMenus,
+        menu: registeredMenus.map(m => m.name + (m.price ? ' ' + Number(m.price).toLocaleString() + '원' : '')).join(' · '),
         lat: 36.604561, lng: 127.298342
     };
     localStorage.setItem('store', JSON.stringify(store));
