@@ -37,55 +37,55 @@
 
 | 영역 | 기술 | 선정 이유 |
 |------|------|-----------|
-| 프론트엔드 | Next.js | 라우팅 자동, Vercel 무료 배포 |
+| 프론트엔드 | HTML/CSS/JS SPA (Next.js 전환 예정) | 모바일 우선 반응형, 빠른 MVP |
 | 백엔드 | FastAPI (Python) | AI/데이터 처리 최적, Gemini SDK 연동 |
 | AI | Google Gemini API | 무료 티어, 카드 등록 불필요 |
-| DB | SQLite | 설치 불필요, MVP 충분 |
+| DB | SQLite | 설치 불필요, 가게·콘텐츠 이력 저장 |
 | 외부 API | 상권정보 API, TourAPI 4.0 | 무료 공공데이터 |
 
 ## 프로젝트 구조
 
 ```
-├── backend/                    ← FastAPI 서버
+├── backend/                    ← FastAPI 서버 (메인)
 │   ├── app/
-│   │   ├── main.py             ← FastAPI 앱 엔트리
-│   │   ├── config.py           ← 환경변수 로드
+│   │   ├── main.py             ← FastAPI 앱 + HTML 서빙
+│   │   ├── config.py           ← 환경변수·좌표·DB경로
+│   │   ├── database.py         ← SQLite 초기화·연결
 │   │   ├── routers/
-│   │   │   ├── content.py      ← 콘텐츠 생성 API
-│   │   │   ├── market.py       ← 상권 분석 API
-│   │   │   └── tourism.py      ← 관광 연계 API
+│   │   │   ├── content.py      ← 콘텐츠 생성 API (SFR-002)
+│   │   │   ├── market.py       ← 상권 분석 API (SFR-001)
+│   │   │   ├── tourism.py      ← 관광 연계 API (SFR-003)
+│   │   │   └── stores.py       ← 가게 관리 API (DAR-003)
 │   │   └── services/
-│   │       ├── llm.py          ← Gemini LLM 호출
-│   │       ├── filter.py       ← 금지어 필터링
+│   │       ├── llm.py          ← Gemini 호출 (레거시)
+│   │       ├── filter.py       ← 금지어 필터링 (COR-001)
 │   │       ├── market_api.py   ← 상권정보 API 연동
 │   │       └── tour_api.py     ← TourAPI 연동
 │   ├── requirements.txt
+│   ├── store.db                ← SQLite DB (자동 생성)
 │   └── .env.example
-├── frontend/                   ← Next.js 모바일 웹앱
-├── app.py                      ← Flask 통합 프로토타입 (시연용)
-├── templates/index.html        ← 프로토타입 UI
+├── templates/
+│   └── index.html              ← 프론트엔드 SPA (모바일 웹앱)
+├── frontend/                   ← Next.js (확장 예정)
+├── app.py                      ← Flask 프로토타입 (레거시)
+├── .env                        ← API 키 (gitignore 대상)
 ├── .gitignore
 └── README.md
 ```
 
 ## 실행 방법
 
-### Backend (FastAPI)
+### Backend (FastAPI + SQLite)
 
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env   # .env에 실제 API 키 입력
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-### 프로토타입 (Flask, 빠른 시연용)
+브라우저에서 http://localhost:8000 접속 (모바일 뷰 권장)
 
-```bash
-pip install flask google-genai python-dotenv requests
-python app.py
-# http://localhost:5000 접속
-```
+> `.env` 파일이 프로젝트 루트에 있으면 자동으로 로드됩니다.
 
 ## 환경변수
 

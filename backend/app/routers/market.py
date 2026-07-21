@@ -1,34 +1,24 @@
-"""상권 분석 API 라우터"""
+"""상권 분석 API (SFR-001)"""
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from app.config import DEFAULT_LAT, DEFAULT_LNG
 from app.services.market_api import get_nearby_stores
 
 router = APIRouter()
 
 
 class MarketRequest(BaseModel):
-    lat: float  # 위도
-    lng: float  # 경도
-    radius: int = 500  # 반경(m)
+    lat: float = DEFAULT_LAT
+    lng: float = DEFAULT_LNG
+    radius: int = 500
 
 
-class MarketResponse(BaseModel):
-    success: bool
-    total_count: int = 0
-    stores: list = []
-    error: str = ""
-
-
-@router.post("/report", response_model=MarketResponse)
-async def market_report(req: MarketRequest):
-    """좌표 기반으로 반경 내 상가 정보를 조회합니다."""
+@router.post("/report")
+def market_report(req: MarketRequest):
+    """좌표 기반 반경 내 상가 정보 조회"""
     try:
-        result = get_nearby_stores(req.lat, req.lng, req.radius)
-        return MarketResponse(
-            success=True,
-            total_count=result.get("total", 0),
-            stores=result.get("stores", []),
-        )
+        result = get_nearby_stores(req.lat, req.lng, req.radius, num_rows=1000)
+        return {"success": True, "total_count": result["total"], "stores": result["stores"]}
     except Exception as e:
-        return MarketResponse(success=False, error=str(e))
+        return {"success": False, "total_count": 0, "stores": [], "error": str(e)}

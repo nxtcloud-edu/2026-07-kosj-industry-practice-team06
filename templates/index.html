@@ -352,7 +352,7 @@ async function generateContent() {
     btn.innerHTML = '<span class="spinner"></span> 생성 중...';
 
     try {
-        const res = await fetch('/generate', {
+        const res = await fetch('/api/content/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: input })
@@ -483,7 +483,7 @@ async function regenerateContent() {
     const input = document.getElementById('userInput').value.trim();
     if (!input) { showToast('입력값이 없습니다'); return; }
     try {
-        const res = await fetch('/generate', {
+        const res = await fetch('/api/content/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: input, variation: variation })
