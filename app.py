@@ -99,7 +99,7 @@ def api_market_report():
     params = {
         "serviceKey": DATA_API_KEY,
         "pageNo": "1",
-        "numOfRows": "50",
+        "numOfRows": "1000",
         "radius": str(radius),
         "cx": str(lng),
         "cy": str(lat),

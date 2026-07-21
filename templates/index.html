@@ -480,14 +480,14 @@ async function loadReport() {
         if (data.success) {
             // 업종별 매칭: category 필드(= indsSclsNm)에서 가게 업종과 관련된 것 필터링
             const categoryKeywords = {
-                '개인카페': ['카페', '커피', '디저트', '제과', '베이커리', '빵', '도넛', '스타벅스', '이디야', '투썸', '빽다방', '컴포즈', '메가커피', '할리스', '엔제리너스', '탐앤탐스', '파스쿠찌', '더벤티'],
-                '식당': ['한식', '중식', '일식', '양식', '음식', '분식', '치킨', '피자', '국', '탕', '찌개', '고기', '횟집', '돈까스'],
+                '개인카페': ['카페', '커피', '디저트', '제과', '베이커리', '빵', '도넛', '비알코올', '스타벅스', '이디야', '투썸', '빽다방', '컴포즈', '메가커피', '할리스', '엔제리너스', '탐앤탐스', '파스쿠찌', '더벤티'],
+                '식당': ['한식', '중식', '일식', '양식', '음식', '분식', '치킨', '피자', '국', '탕', '찌개', '고기', '횟집', '돈까스', '간이'],
                 '농산물': ['농산물', '과일', '채소', '청과', '농협'],
                 '소매': ['소매', '편의점', '마트', '슈퍼', '잡화'],
             };
             const keywords = categoryKeywords[store.category] || ['카페'];
             const sameCategory = data.stores.filter(s => {
-                const cat = (s.category || '').toLowerCase();
+                const cat = (s.category || '' + ' ' + (s.category_mid || '')).toLowerCase();
                 return keywords.some(k => cat.includes(k));
             });
             document.getElementById('report-stats').innerHTML = `
