@@ -81,6 +81,25 @@ def get_nearby_festivals():
     return []
 
 
+def get_tourism_from_gemini():
+    """TourAPI에 데이터가 없을 때 Gemini에게 세종시 관광/축제 정보를 조회"""
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents="""세종시 조치원읍 근처에서 현재 시기(7월)에 열리는 축제나 행사, 
+그리고 주변 관광지 정보를 간단히 알려줘.
+다음 형식으로만 답해줘 (3줄 이내):
+- 축제/행사: (축제명, 시기, 장소)
+- 관광지: (관광지명, 거리)
+- 특징: (마케팅에 활용할 포인트)
+
+실제 정보만 알려주고, 모르면 '세종시 복숭아 축제(7월 말), 세종호수공원' 같은 대표적인 것만 답해."""
+        )
+        return f"[인근 관광/축제 — AI 조사] {response.text.strip()}"
+    except Exception:
+        return "[인근 축제] 세종시 복숭아 축제(7월 말 예정), 세종호수공원(차량 15분)"
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -130,9 +149,35 @@ def api_market_report():
 def api_tourism_festivals():
     """관광 연계 API (프론트엔드 관광 탭용)"""
     festivals = get_nearby_festivals()
+    if festivals:
+        return jsonify({"success": True, "festivals": festivals})
+
+    # TourAPI에 데이터 없으면 Gemini로 관광 정보 조회
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents="""세종시 조치원읍 주변의 관광지와 축제를 JSON 배열로 알려줘.
+각 항목은 {"title": "이름", "start_date": "시작일(YYYYMMDD)", "end_date": "종료일", "address": "주소"} 형식이야.
+실제 존재하는 것만 3~5개 알려줘. JSON 배열만 출력해."""
+        )
+        import json, re
+        text = response.text.strip()
+        # JSON 추출
+        match = re.search(r'\[.*\]', text, re.DOTALL)
+        if match:
+            gemini_festivals = json.loads(match.group(0))
+            return jsonify({"success": True, "festivals": gemini_festivals, "source": "AI"})
+    except Exception:
+        pass
+
+    # 최종 폴백
     return jsonify({
         "success": True,
-        "festivals": festivals,
+        "festivals": [
+            {"title": "조치원 복숭아 축제", "start_date": "20250725", "end_date": "20250727", "address": "세종시 조치원읍"},
+            {"title": "세종 한글술술 축제", "start_date": "20250913", "end_date": "20250913", "address": "세종시 조치원읍"},
+        ],
+        "source": "sample",
     })
 
 
@@ -161,7 +206,8 @@ def generate_marketing():
         f = festivals[0]
         festival_text = f"[인근 축제] {f['title']} ({f['start']}~{f['end']}, {f['addr']})"
     else:
-        festival_text = "[인근 축제] 현재 등록된 세종시 축제 없음"
+        # TourAPI에 데이터가 없으면 Gemini에게 세종시 관광/축제 정보를 물어봄
+        festival_text = get_tourism_from_gemini()
 
     # 3. LLM 프롬프트 조립 (RAG 방식: 실제 데이터를 근거로 주입)
     prompt = f"""당신은 소상공인을 돕는 10년 차 전문 마케터입니다.
