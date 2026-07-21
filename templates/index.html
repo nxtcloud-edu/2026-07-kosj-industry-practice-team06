@@ -396,9 +396,9 @@ function renderTemplateImage() {
                 <div style="display:inline-block; background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:16px; font-size:11px; color:rgba(255,255,255,0.9);">📍 ${store ? store.address : '세종시 조치원읍'}</div>
                 <p style="font-size:13px; color:rgba(255,255,255,0.8); margin-top:6px;">${store ? store.name : ''}</p>
             </div>
-            <div style="position:relative; z-index:1; text-align:center;">
-                <span style="font-size:2.5rem;">${theme.emoji}</span>
-                <h2 style="font-size:1.2rem; font-weight:800; color:white; margin-top:10px; text-shadow:0 2px 8px rgba(0,0,0,0.15);">${banner.length > 25 ? banner.substring(0, 25) + '...' : banner}</h2>
+            <div style="position:relative; z-index:1; text-align:center; padding:0 8px;">
+                <span style="font-size:2.2rem;">${theme.emoji}</span>
+                <h2 style="font-size:1.1rem; font-weight:800; color:white; margin-top:8px; line-height:1.5; text-shadow:0 2px 8px rgba(0,0,0,0.15); word-break:keep-all; overflow-wrap:break-word;">${banner}</h2>
             </div>
             <div style="position:relative; z-index:1; text-align:center;">
                 <p style="font-size:11px; color:rgba(255,255,255,0.7); font-style:italic;">${theme.vibe}</p>
@@ -475,21 +475,32 @@ async function loadReport() {
         });
         const data = await res.json();
         if (data.success) {
-            const cafes = data.stores.filter(s => s.category_small && s.category_small.includes('카페'));
+            // 업종별 매칭: category 필드(= indsSclsNm)에서 가게 업종과 관련된 것 필터링
+            const categoryKeywords = {
+                '개인카페': ['카페', '커피', '디저트', '제과', '베이커리', '빵'],
+                '식당': ['한식', '중식', '일식', '양식', '음식', '분식', '치킨', '피자'],
+                '농산물': ['농산물', '과일', '채소', '청과'],
+                '소매': ['소매', '편의점', '마트', '슈퍼'],
+            };
+            const keywords = categoryKeywords[store.category] || ['카페'];
+            const sameCategory = data.stores.filter(s => {
+                const cat = (s.category || '').toLowerCase();
+                return keywords.some(k => cat.includes(k));
+            });
             document.getElementById('report-stats').innerHTML = `
                 <div style="display:flex; justify-content:space-around; text-align:center;">
                     <div><div style="font-size:1.8rem; font-weight:900; color:var(--primary);">${data.total_count}</div><div style="font-size:12px; color:var(--text-light);">주변 점포</div></div>
-                    <div><div style="font-size:1.8rem; font-weight:900; color:var(--success);">${cafes.length}</div><div style="font-size:12px; color:var(--text-light);">동종 업종</div></div>
+                    <div><div style="font-size:1.8rem; font-weight:900; color:var(--success);">${sameCategory.length}</div><div style="font-size:12px; color:var(--text-light);">동종 업종</div></div>
                     <div><div style="font-size:1.8rem; font-weight:900; color:var(--warning);">3.2k</div><div style="font-size:12px; color:var(--text-light);">일 유동인구</div></div>
-                </div>
+                </div><p style="margin-top:10px;"><span class="badge badge-api">실제 API</span></p>
             `;
             document.getElementById('report-insight').innerHTML = `
                 <h3 style="font-size:14px; font-weight:700; margin-bottom:8px;">🤖 AI 인사이트</h3>
-                <p style="font-size:13px; line-height:1.8;">"반경 500m 내 점포 ${data.total_count}개 중 동종 업종 ${cafes.length}개. ${store.category} 수요 대비 경쟁이 ${cafes.length > 5 ? '다소 높은' : '적은'} 편."</p>
+                <p style="font-size:13px; line-height:1.8;">"반경 500m 내 점포 ${data.total_count}개 중 동종 업종 ${sameCategory.length}개. ${store.category} 수요 대비 경쟁이 ${sameCategory.length > 5 ? '다소 높은' : '적은'} 편."</p>
             `;
             document.getElementById('report-competitors').innerHTML = `
                 <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">주요 경쟁 업체</h3>
-                ${data.stores.slice(0, 5).map(s => `<div style="padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">• ${s.name} <span style="color:var(--text-light);">(${s.category_mid || s.category_small || ''})</span></div>`).join('')}
+                ${data.stores.slice(0, 5).map(s => `<div style="padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">• ${s.name} <span style="color:var(--text-light);">(${s.category || ''})</span></div>`).join('')}
             `;
             document.getElementById('report-strategy').innerHTML = `
                 <h3 style="font-size:14px; font-weight:700; margin-bottom:8px; color:#166534;">💡 추천 전략</h3>

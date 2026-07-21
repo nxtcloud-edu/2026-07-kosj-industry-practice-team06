@@ -94,12 +94,36 @@ def api_market_report():
     lng = data.get("lng", DEFAULT_LNG)
     radius = data.get("radius", 500)
 
-    market_data = get_nearby_stores(lat, lng, radius)
-    return jsonify({
-        "success": True,
-        "total_count": market_data["total"],
-        "stores": market_data["stores"],
-    })
+    # 리포트용으로 더 많은 데이터 조회
+    url = "http://apis.data.go.kr/B553077/api/open/sdsc2/storeListInRadius"
+    params = {
+        "serviceKey": DATA_API_KEY,
+        "pageNo": "1",
+        "numOfRows": "50",
+        "radius": str(radius),
+        "cx": str(lng),
+        "cy": str(lat),
+        "type": "json",
+    }
+    try:
+        r = requests.get(url, params=params, timeout=10)
+        if r.status_code == 200:
+            resp_data = r.json()
+            items = resp_data.get("body", {}).get("items", [])
+            total = resp_data.get("body", {}).get("totalCount", 0)
+            stores = []
+            for item in items:
+                stores.append({
+                    "name": item.get("bizesNm", ""),
+                    "category": item.get("indsSclsNm", ""),
+                    "category_large": item.get("indsLclsNm", ""),
+                    "category_mid": item.get("indsMclsNm", ""),
+                    "address": item.get("rdnmAdr", ""),
+                })
+            return jsonify({"success": True, "total_count": total, "stores": stores})
+    except Exception:
+        pass
+    return jsonify({"success": False, "total_count": 0, "stores": []})
 
 
 @app.route("/api/tourism/festivals", methods=["POST"])
