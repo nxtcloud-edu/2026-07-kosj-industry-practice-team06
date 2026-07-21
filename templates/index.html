@@ -503,7 +503,8 @@ async function loadReport() {
             `;
             document.getElementById('report-competitors').innerHTML = `
                 <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">주요 경쟁 업체</h3>
-                ${data.stores.slice(0, 5).map(s => `<div style="padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">• ${s.name} <span style="color:var(--text-light);">(${s.category || ''})</span></div>`).join('')}
+                ${sameCategory.slice(0, 5).map(s => `<div style="padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;">• ${s.name} <span style="color:var(--text-light);">(${s.category || ''})</span></div>`).join('')}
+                ${sameCategory.length === 0 ? '<p style="font-size:13px; color:var(--text-light);">반경 내 동종 업종 없음</p>' : ''}
             `;
             document.getElementById('report-strategy').innerHTML = `
                 <h3 style="font-size:14px; font-weight:700; margin-bottom:8px; color:#166534;">💡 추천 전략</h3>
