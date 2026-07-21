@@ -64,9 +64,7 @@
 │   ├── requirements.txt
 │   ├── store.db                ← SQLite DB (자동 생성)
 │   └── .env.example
-├── templates/
-│   └── index.html              ← 프론트엔드 SPA (모바일 웹앱)
-├── frontend/                   ← Next.js 프론트엔드 (React)
+├── frontend/                   ← Next.js 프론트엔드 (메인 UI)
 │   ├── app/
 │   │   ├── layout.js           ← 루트 레이아웃
 │   │   ├── page.js             ← 메인 페이지 (탭 전환)
@@ -80,7 +78,9 @@
 │   │       └── SettingsScreen.js
 │   ├── next.config.js          ← API 프록시 설정
 │   └── package.json
-├── app.py                      ← Flask 프로토타입 (레거시)
+├── templates/
+│   └── index.html              ← FastAPI 직접 서빙용 (백업, Next.js 없이 단독 실행 시)
+├── app.py                      ← Flask 프로토타입 (레거시, 참고용)
 ├── .env                        ← API 키 (gitignore 대상)
 ├── .gitignore
 └── README.md
