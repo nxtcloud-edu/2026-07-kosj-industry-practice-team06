@@ -23,6 +23,64 @@ export default function ResultScreen({ result, store, onBack, onRegenerate, onUp
   const doRegenerate = async () => { setRegenerating(true); await onRegenerate(); setRegenerating(false); };
   const copy = () => { navigator.clipboard.writeText(`${result.instagram}\n\n${result.banner}`); };
 
+  const saveTemplateImage = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+
+    // 배경 그라디언트
+    const colors = { 0: ['#667eea', '#764ba2'], 1: ['#11998e', '#38ef7d'], 2: ['#ee9ca7', '#ffdde1'], 3: ['#4facfe', '#00f2fe'] };
+    const [c1, c2] = colors[tplIdx % 4] || colors[0];
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+    grad.addColorStop(0, c1); grad.addColorStop(1, c2);
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1080);
+
+    // 장식 원
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath(); ctx.arc(950, 100, 200, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.arc(100, 950, 250, 0, Math.PI * 2); ctx.fill();
+
+    // 위치·가게명
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = '28px sans-serif';
+    ctx.fillText(`📍 ${store.address}`, 80, 120);
+    ctx.font = '32px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(store.name, 80, 170);
+
+    // 이모지
+    ctx.font = '120px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(theme.emoji, 540, 450);
+
+    // 배너 문구
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 48px sans-serif';
+    ctx.textAlign = 'center';
+    const bannerText = result.banner || '';
+    if (bannerText.length > 18) {
+      const mid = Math.ceil(bannerText.length / 2);
+      const sp = bannerText.lastIndexOf(' ', mid);
+      const split = sp > 0 ? sp : mid;
+      ctx.fillText(bannerText.substring(0, split), 540, 580);
+      ctx.fillText(bannerText.substring(split).trim(), 540, 640);
+    } else {
+      ctx.fillText(bannerText, 540, 600);
+    }
+
+    // 분위기 문구
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'italic 28px sans-serif';
+    ctx.fillText(theme.vibe, 540, 900);
+
+    // 다운로드
+    const link = document.createElement('a');
+    link.download = `마케팅AI_${store.name}_${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  };
+
   // result가 바뀌면 편집 필드도 갱신
   if (result.instagram !== caption && !editing) { setCaption(result.instagram || ''); setBanner(result.banner || ''); }
 
@@ -53,6 +111,7 @@ export default function ResultScreen({ result, store, onBack, onRegenerate, onUp
         </div>
         <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
           <button className="btn-outline" style={{ flex: 1 }} onClick={() => setTplIdx(tplIdx + 1)}>🎨 템플릿 변경</button>
+          <button className="btn-outline" style={{ flex: 1 }} onClick={saveTemplateImage}>📥 이미지 저장</button>
         </div>
       </div>
 

@@ -17,7 +17,13 @@ export default function HomeScreen({ store, onGenerated }) {
     try {
       const res = await fetch('/api/content/generate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: input }),
+        body: JSON.stringify({
+          prompt: input,
+          store_name: store.name,
+          store_category: store.category,
+          store_menus: store.menu || '',
+          store_address: store.address,
+        }),
       });
       const data = await res.json();
       if (data.success) onGenerated(data, input);

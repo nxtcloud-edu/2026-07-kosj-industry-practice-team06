@@ -18,6 +18,9 @@ class ContentRequest(BaseModel):
     prompt: str
     store_id: int = 0
     store_name: str = ""
+    store_category: str = ""
+    store_menus: str = ""
+    store_address: str = "세종시 조치원읍"
     location: str = "조치원"
     variation: int = 0
 
@@ -58,12 +61,22 @@ def generate_content(req: ContentRequest):
         festival_text = _get_tourism_from_gemini()
 
     # 3. LLM 프롬프트 조립
+    store_section = ""
+    if req.store_name or req.store_category or req.store_menus:
+        store_section = f"""
+[가게 정보]
+- 가게명: {req.store_name}
+- 업종: {req.store_category}
+- 위치: {req.store_address}
+- 대표 메뉴/주력 상품: {req.store_menus}
+"""
+
     prompt = f"""당신은 소상공인을 돕는 10년 차 전문 마케터입니다.
 아래 사장님의 요청과 실제 상권·관광 데이터를 결합하여 마케팅 콘텐츠를 생성하세요.
 
 [사장님 요청]
 "{req.prompt}"
-
+{store_section}
 [상권 데이터 (조치원읍 반경 500m)]
 {market_summary}
 
@@ -77,6 +90,9 @@ def generate_content(req: ContentRequest):
 4. 축제·관광 데이터가 있으면 자연스럽게 연계하세요.
 5. 스마트폰에서 읽기 좋은 길이로 작성하세요.
 6. variation={req.variation}이면 이전과 다른 톤과 표현을 사용하세요.
+7. 가게의 대표 메뉴나 주력 상품을 자연스럽게 강조하세요.
+8. 그 가게만의 특색(수제, 로컬, 시즌 한정 등)을 담아주세요.
+9. 업종 특성에 맞는 톤을 사용하세요 (카페=감성적, 식당=푸짐한, 농산물=신선한).
 
 [출력 형식]
 ---인스타그램 캡션---
