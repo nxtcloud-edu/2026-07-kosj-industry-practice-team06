@@ -32,6 +32,7 @@ class ContentResponse(BaseModel):
     hashtags: str = ""
     market_info: str = ""
     festival_info: str = ""
+    festival_image: str = ""
     model_used: str = ""
     error: str = ""
 
@@ -54,9 +55,11 @@ def generate_content(req: ContentRequest):
 
     # 2. 축제 데이터 조회 (TourAPI → Gemini 폴백)
     festivals = get_nearby_festivals()
+    festival_image = ""
     if festivals:
         f = festivals[0]
-        festival_text = f"[인근 축제] {f['title']} ({f.get('start', '')}~{f.get('end', '')}, {f.get('addr', '')})"
+        festival_text = f"[인근 축제] {f['title']} ({f.get('start_date', '')}~{f.get('end_date', '')}, {f.get('address', '')})"
+        festival_image = f.get("image", "") or ""
     else:
         festival_text = _get_tourism_from_gemini()
 
@@ -125,6 +128,7 @@ def generate_content(req: ContentRequest):
                 hashtags=result["hashtags"],
                 market_info=market_summary,
                 festival_info=festival_text,
+                festival_image=festival_image,
                 model_used=model_name,
             )
         except Exception as e:
