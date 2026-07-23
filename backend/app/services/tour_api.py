@@ -6,8 +6,8 @@ from app.config import DATA_API_KEY
 BASE_URL = "http://apis.data.go.kr/B551011/KorService2"
 
 
-def get_nearby_festivals() -> list:
-    """세종시 축제·행사 조회 (현재 날짜 이후만)"""
+def get_nearby_festivals(lat: float = 36.604561, lng: float = 127.298342) -> list:
+    """좌표 기반 축제·행사 조회 (현재 날짜 이후만)"""
     today = datetime.now().strftime("%Y%m%d")
     url = f"{BASE_URL}/searchFestival2"
     params = {
@@ -17,7 +17,9 @@ def get_nearby_festivals() -> list:
         "_type": "json",
         "numOfRows": 10,
         "pageNo": 1,
-        "areaCode": 8,
+        "mapX": lng,
+        "mapY": lat,
+        "radius": 20000,
         "eventStartDate": today,
     }
 
@@ -43,9 +45,9 @@ def get_nearby_festivals() -> list:
         return []
 
 
-def get_nearby_spots() -> list:
-    """세종시 관광지 조회 (contentTypeId=12)"""
-    url = f"{BASE_URL}/areaBasedList2"
+def get_nearby_spots(lat: float = 36.604561, lng: float = 127.298342) -> list:
+    """좌표 기반 관광지 조회 (contentTypeId=12)"""
+    url = f"{BASE_URL}/locationBasedList2"
     params = {
         "serviceKey": DATA_API_KEY,
         "MobileOS": "ETC",
@@ -53,7 +55,9 @@ def get_nearby_spots() -> list:
         "_type": "json",
         "numOfRows": 10,
         "pageNo": 1,
-        "areaCode": 8,
+        "mapX": lng,
+        "mapY": lat,
+        "radius": 20000,
         "contentTypeId": 12,
     }
 

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 from app.database import init_db
-from app.routers import content, market, tourism, stores, admin
+from app.routers import content, market, tourism, stores, suggestions, admin
 
 app = FastAPI(
     title="AI 소상공인 마케팅 플랫폼",
@@ -26,6 +26,7 @@ app.include_router(stores.router, prefix="/api/stores", tags=["가게 관리"])
 app.include_router(content.router, prefix="/api/content", tags=["콘텐츠 생성"])
 app.include_router(market.router, prefix="/api/market", tags=["상권 분석"])
 app.include_router(tourism.router, prefix="/api/tourism", tags=["관광 연계"])
+app.include_router(suggestions.router, prefix="/api/suggestions", tags=["추천 제안"])
 app.include_router(admin.router, prefix="/api/admin", tags=["진흥원 대시보드"])
 
 # 프론트엔드 HTML 서빙 (templates/index.html)

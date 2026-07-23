@@ -1,15 +1,29 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function HomeScreen({ store, onGenerated }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
-  const suggestions = [
-    { title: '🍑 복숭아 축제 시즌', desc: '제철 복숭아 활용 한정메뉴 홍보는 어떨까요?', type: '축제', prompt: '복숭아 축제 관련 홍보물 만들어줘' },
-    { title: '☀️ 여름 신메뉴 홍보', desc: '더운 날씨에 맞는 시원한 메뉴 홍보물 제안', type: '시즌', prompt: '여름 시즌 신메뉴 홍보물 만들어줘' },
-    { title: '📈 주말 유동인구 증가', desc: '이번 주말 주변 유동인구가 높을 것으로 보여요.', type: '상권', prompt: '주말 이벤트 홍보물 만들어줘' },
-  ];
+  useEffect(() => { fetchSuggestions(); }, []);
+
+  const fetchSuggestions = async () => {
+    try {
+      const res = await fetch('/api/suggestions/', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: store.lat, lng: store.lng, address: store.address, category: store.category }),
+      });
+      const data = await res.json();
+      if (data.success && data.suggestions) setSuggestions(data.suggestions);
+    } catch {
+      // 폴백 제안
+      setSuggestions([
+        { title: '☀️ 시즌 메뉴 홍보', desc: '지금 시기에 맞는 메뉴를 홍보해보세요.', type: '시즌', prompt: '시즌 메뉴 홍보물 만들어줘' },
+        { title: '📈 주말 이벤트', desc: '주말 유동인구를 활용해보세요.', type: '상권', prompt: '주말 이벤트 홍보물 만들어줘' },
+      ]);
+    }
+  };
 
   const generate = async () => {
     if (!input.trim()) return;
@@ -23,6 +37,8 @@ export default function HomeScreen({ store, onGenerated }) {
           store_category: store.category,
           store_menus: store.menu || '',
           store_address: store.address,
+          store_lat: store.lat,
+          store_lng: store.lng,
         }),
       });
       const data = await res.json();

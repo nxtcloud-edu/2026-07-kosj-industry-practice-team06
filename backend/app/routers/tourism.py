@@ -23,7 +23,7 @@ class TourismRequest(BaseModel):
 def tourism_data(req: TourismRequest):
     """관광지 + 축제 통합 조회 (프론트엔드 관광 탭용)"""
     # 1. 관광지 조회
-    spots = get_nearby_spots()
+    spots = get_nearby_spots(lat=req.lat, lng=req.lng)
     spots_source = "TourAPI" if spots else "sample"
     if not spots:
         spots = [
@@ -33,7 +33,7 @@ def tourism_data(req: TourismRequest):
         ]
 
     # 2. 축제 조회 (현재 날짜 이후)
-    festivals = get_nearby_festivals()
+    festivals = get_nearby_festivals(lat=req.lat, lng=req.lng)
     festivals_source = "TourAPI"
 
     # 3. 축제 없으면 Gemini로 향후 축제 검색
@@ -61,7 +61,7 @@ def tourism_data(req: TourismRequest):
 @router.post("/festivals")
 def nearby_festivals(req: TourismRequest):
     """축제만 조회 (레거시 호환)"""
-    festivals = get_nearby_festivals()
+    festivals = get_nearby_festivals(lat=req.lat, lng=req.lng)
 
     if festivals:
         return {"success": True, "festivals": festivals, "source": "TourAPI"}

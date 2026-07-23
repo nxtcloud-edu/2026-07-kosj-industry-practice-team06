@@ -21,6 +21,8 @@ class ContentRequest(BaseModel):
     store_category: str = ""
     store_menus: str = ""
     store_address: str = "세종시 조치원읍"
+    store_lat: float = 36.604561
+    store_lng: float = 127.298342
     location: str = "조치원"
     variation: int = 0
 
@@ -47,14 +49,14 @@ def generate_content(req: ContentRequest):
         return ContentResponse(success=False, error="GEMINI_API_KEY가 설정되지 않았습니다.")
 
     # 1. 상권 데이터 조회
-    market_data = get_nearby_stores(DEFAULT_LAT, DEFAULT_LNG, 500)
+    market_data = get_nearby_stores(req.store_lat, req.store_lng, 500)
     market_summary = f"주변 상가 {market_data['total']}개"
     if market_data["stores"]:
         cafes = [s for s in market_data["stores"] if "카페" in s.get("category", "")]
         market_summary += f", 카페 {len(cafes)}개"
 
     # 2. 축제 데이터 조회 (TourAPI → Gemini 폴백)
-    festivals = get_nearby_festivals()
+    festivals = get_nearby_festivals(lat=req.store_lat, lng=req.store_lng)
     festival_image = ""
     if festivals:
         f = festivals[0]
