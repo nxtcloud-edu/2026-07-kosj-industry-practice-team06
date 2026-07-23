@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8000/api/:path*',
+        destination: 'https://two026-07-kosj-industry-practice-team06.onrender.com/api/:path*',
       },
     ];
   },
