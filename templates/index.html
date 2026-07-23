@@ -176,9 +176,19 @@
         <button id="btn-edit" class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="toggleEdit()">✏️ 문구 수정</button>
         <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="regenerateContent()">🔄 다시 생성</button>
     </div>
-    <div style="padding:12px 16px 8px; display:flex; gap:8px;">
-        <button class="btn btn-primary" style="flex:1;" onclick="copyAll()">📋 복사</button>
-        <button id="btn-save" class="btn btn-primary" style="flex:1;" onclick="saveContent()">💾 저장</button>
+    <div style="padding:8px 16px;">
+        <p style="font-size:12px; font-weight:600; color:var(--text-light); margin-bottom:6px;">📝 문구</p>
+        <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="copyAll()">📋 문구 복사</button>
+            <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="saveContent()">💾 문구 저장</button>
+        </div>
+    </div>
+    <div style="padding:4px 16px 16px;">
+        <p style="font-size:12px; font-weight:600; color:var(--text-light); margin-bottom:6px;">🖼️ 이미지</p>
+        <div style="display:flex; gap:8px;">
+            <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="copyTemplateImage()">📋 이미지 복사</button>
+            <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="saveTemplateImage()">📥 이미지 저장</button>
+        </div>
     </div>
     <div style="padding:0 16px 24px;">
         <button class="btn-outline" style="width:100%; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="showScreen('saved')">📁 보관함 보기</button>
@@ -515,7 +525,87 @@ async function regenerateContent() {
 // ─── 복사 ───
 function copyAll() {
     const text = `${lastResult.instagram || ''}\n\n${lastResult.banner || ''}`;
-    navigator.clipboard.writeText(text).then(() => showToast('📋 복사 완료!'));
+    navigator.clipboard.writeText(text).then(() => showToast('📋 문구 복사 완료!'));
+}
+
+// ─── 템플릿 이미지 저장/복사 ───
+function _createTemplateCanvas() {
+    const theme = templateThemes[currentTemplate % templateThemes.length];
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+
+    // 그라디언트 배경
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
+    const colors = [[103,126,234], [118,75,162], [17,153,142], [56,239,125], [238,156,167], [255,221,225], [79,172,254], [0,242,254]];
+    const idx = (currentTemplate % 4) * 2;
+    grad.addColorStop(0, `rgb(${colors[idx]})`);
+    grad.addColorStop(1, `rgb(${colors[idx+1]})`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1080, 1080);
+
+    // 장식
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath(); ctx.arc(950, 100, 200, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.arc(100, 950, 250, 0, Math.PI*2); ctx.fill();
+
+    // 위치·가게명
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.font = '28px sans-serif';
+    ctx.fillText('📍 ' + (store ? store.address : ''), 80, 120);
+    ctx.font = '32px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText(store ? store.name : '', 80, 170);
+
+    // 이모지
+    ctx.font = '120px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(theme.emoji, 540, 450);
+
+    // 배너 문구
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 48px sans-serif';
+    const bannerText = lastResult ? (lastResult.banner || '') : '';
+    if (bannerText.length > 18) {
+        const mid = Math.ceil(bannerText.length / 2);
+        const sp = bannerText.lastIndexOf(' ', mid);
+        const split = sp > 0 ? sp : mid;
+        ctx.fillText(bannerText.substring(0, split), 540, 580);
+        ctx.fillText(bannerText.substring(split).trim(), 540, 640);
+    } else {
+        ctx.fillText(bannerText, 540, 600);
+    }
+
+    // 분위기
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = 'italic 28px sans-serif';
+    ctx.fillText(theme.vibe, 540, 900);
+
+    return canvas;
+}
+
+function saveTemplateImage() {
+    const canvas = _createTemplateCanvas();
+    const link = document.createElement('a');
+    link.download = '마케팅AI_' + (store ? store.name : 'image') + '_' + Date.now() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('📥 이미지가 저장되었습니다');
+}
+
+function copyTemplateImage() {
+    const canvas = _createTemplateCanvas();
+    canvas.toBlob(blob => {
+        if (blob) {
+            navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(() => {
+                showToast('📋 이미지가 클립보드에 복사되었습니다');
+            }).catch(() => {
+                showToast('이미지 복사 실패 (브라우저 지원 확인)');
+            });
+        }
+    }, 'image/png');
 }
 
 // ─── 보관함 ───
@@ -532,8 +622,6 @@ function saveContent() {
     };
     savedContents.unshift(item);
     localStorage.setItem('savedContents', JSON.stringify(savedContents));
-    document.getElementById('btn-save').textContent = '✅ 저장됨';
-    setTimeout(() => { document.getElementById('btn-save').textContent = '💾 저장'; }, 2000);
     showToast('💾 보관함에 저장되었습니다');
 }
 
