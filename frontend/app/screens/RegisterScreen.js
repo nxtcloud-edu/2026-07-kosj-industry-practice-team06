@@ -1,23 +1,17 @@
 'use client';
 import { useState } from 'react';
 
-// 주요 지역 좌표 매핑
+// 조치원읍 내 주요 위치 좌표 매핑
 const locationPresets = {
-  '세종시 조치원읍': { lat: 36.604561, lng: 127.298342 },
-  '세종시 보람동': { lat: 36.510, lng: 127.005 },
-  '세종시 나성동': { lat: 36.497, lng: 127.025 },
-  '세종시 도담동': { lat: 36.512, lng: 127.040 },
-  '대전시 유성구': { lat: 36.362, lng: 127.356 },
-  '대전시 서구': { lat: 36.335, lng: 127.384 },
-  '천안시 동남구': { lat: 36.810, lng: 127.151 },
-  '청주시 상당구': { lat: 36.636, lng: 127.490 },
-  '공주시': { lat: 36.446, lng: 127.119 },
+  '세종시 조치원읍 (조치원역 근처)': { lat: 36.604561, lng: 127.298342 },
+  '세종시 조치원읍 (조치원읍사무소 근처)': { lat: 36.601, lng: 127.297 },
+  '세종시 조치원읍 (고려대 세종캠퍼스 근처)': { lat: 36.617, lng: 127.286 },
   '직접 입력': { lat: 36.604561, lng: 127.298342 },
 };
 
 export default function RegisterScreen({ onRegistered }) {
   const [name, setName] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('세종시 조치원읍');
+  const [selectedLocation, setSelectedLocation] = useState('세종시 조치원읍 (조치원역 근처)');
   const [customAddress, setCustomAddress] = useState('');
   const [category, setCategory] = useState('개인카페');
   const [menuName, setMenuName] = useState('');
