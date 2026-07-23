@@ -176,9 +176,22 @@
         <button id="btn-edit" class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="toggleEdit()">✏️ 문구 수정</button>
         <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="regenerateContent()">🔄 다시 생성</button>
     </div>
-    <div style="padding:12px 16px 24px;">
-        <button class="btn btn-primary" onclick="copyAll()">📋 텍스트 복사</button>
+    <div style="padding:12px 16px 8px; display:flex; gap:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="copyAll()">📋 복사</button>
+        <button id="btn-save" class="btn btn-primary" style="flex:1;" onclick="saveContent()">💾 저장</button>
     </div>
+    <div style="padding:0 16px 24px;">
+        <button class="btn-outline" style="width:100%; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="showScreen('saved')">📁 보관함 보기</button>
+    </div>
+</div>
+
+<!-- ===================== 화면 3-2: 보관함 ===================== -->
+<div id="screen-saved" class="hidden">
+    <div class="page-header">
+        <h1>📁 보관함</h1>
+        <p>저장한 콘텐츠를 관리하세요</p>
+    </div>
+    <div id="saved-list"></div>
 </div>
 
 <!-- ===================== 화면 4: 상권 리포트 ===================== -->
@@ -234,6 +247,7 @@
 <!-- 바텀 네비 -->
 <nav class="bottom-nav" id="bottom-nav" class="hidden">
     <button class="nav-item active" data-tab="home"><span class="icon">🏠</span>홈</button>
+    <button class="nav-item" data-tab="saved"><span class="icon">📁</span>보관함</button>
     <button class="nav-item" data-tab="report"><span class="icon">📊</span>리포트</button>
     <button class="nav-item" data-tab="tourism"><span class="icon">🗺️</span>관광</button>
     <button class="nav-item" data-tab="settings"><span class="icon">⚙️</span>설정</button>
@@ -293,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tab === 'report') loadReport();
             if (tab === 'tourism') loadTourism();
             if (tab === 'settings') loadSettings();
+            if (tab === 'saved') loadSavedScreen();
         });
     });
 });
@@ -501,6 +516,73 @@ async function regenerateContent() {
 function copyAll() {
     const text = `${lastResult.instagram || ''}\n\n${lastResult.banner || ''}`;
     navigator.clipboard.writeText(text).then(() => showToast('📋 복사 완료!'));
+}
+
+// ─── 보관함 ───
+let savedContents = JSON.parse(localStorage.getItem('savedContents') || '[]');
+
+function saveContent() {
+    if (!lastResult) return;
+    const item = {
+        id: Date.now(),
+        instagram: lastResult.instagram || '',
+        banner: lastResult.banner || '',
+        hashtags: lastResult.hashtags || '',
+        savedAt: new Date().toLocaleDateString('ko-KR'),
+    };
+    savedContents.unshift(item);
+    localStorage.setItem('savedContents', JSON.stringify(savedContents));
+    document.getElementById('btn-save').textContent = '✅ 저장됨';
+    setTimeout(() => { document.getElementById('btn-save').textContent = '💾 저장'; }, 2000);
+    showToast('💾 보관함에 저장되었습니다');
+}
+
+function loadSavedScreen() {
+    savedContents = JSON.parse(localStorage.getItem('savedContents') || '[]');
+    const container = document.getElementById('saved-list');
+    if (savedContents.length === 0) {
+        container.innerHTML = '<div class="card" style="text-align:center; padding:40px 20px;"><p style="font-size:2rem; margin-bottom:12px;">📭</p><p style="color:var(--text-light); font-size:14px;">저장한 콘텐츠가 없습니다.</p></div>';
+        return;
+    }
+    container.innerHTML = savedContents.map((item, i) => `
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--text-light);">${item.savedAt}</span>
+                <button onclick="deleteSaved(${item.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;">🗑️</button>
+            </div>
+            <div style="padding:8px 12px; background:linear-gradient(135deg, #667eea20, #764ba220); border-radius:8px; margin-bottom:8px;">
+                <p style="font-size:13px; font-weight:600; text-align:center;">${item.banner || '(배너 없음)'}</p>
+            </div>
+            <p style="font-size:12px; color:var(--text-light); line-height:1.6; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${item.instagram || ''}</p>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="viewSaved(${i})">👁️ 상세</button>
+                <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="copySaved(${i})">📋 복사</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function deleteSaved(id) {
+    if (!confirm('삭제하시겠습니까?')) return;
+    savedContents = savedContents.filter(c => c.id !== id);
+    localStorage.setItem('savedContents', JSON.stringify(savedContents));
+    loadSavedScreen();
+    showToast('삭제되었습니다');
+}
+
+function viewSaved(idx) {
+    const item = savedContents[idx];
+    if (!item) return;
+    lastResult = item;
+    displayResult(item);
+    showScreen('result');
+}
+
+function copySaved(idx) {
+    const item = savedContents[idx];
+    if (!item) return;
+    navigator.clipboard.writeText(`${item.instagram}\n\n${item.banner}`);
+    showToast('📋 복사 완료!');
 }
 
 // ─── 상권 리포트 ───
