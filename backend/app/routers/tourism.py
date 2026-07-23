@@ -16,7 +16,7 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 class TourismRequest(BaseModel):
     lat: float = 36.604561
     lng: float = 127.298342
-    radius: int = 5000
+    radius: int = 2000
 
 
 @router.post("/data")

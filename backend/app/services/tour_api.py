@@ -19,7 +19,7 @@ def get_nearby_festivals(lat: float = 36.604561, lng: float = 127.298342) -> lis
         "pageNo": 1,
         "mapX": lng,
         "mapY": lat,
-        "radius": 20000,
+        "radius": 2000,
         "eventStartDate": today,
     }
 
@@ -57,7 +57,7 @@ def get_nearby_spots(lat: float = 36.604561, lng: float = 127.298342) -> list:
         "pageNo": 1,
         "mapX": lng,
         "mapY": lat,
-        "radius": 20000,
+        "radius": 2000,
         "contentTypeId": 12,
     }
 

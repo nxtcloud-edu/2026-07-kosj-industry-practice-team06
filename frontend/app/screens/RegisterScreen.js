@@ -32,10 +32,25 @@ export default function RegisterScreen({ onRegistered }) {
 
   const removeMenu = (i) => setMenus(menus.filter((_, idx) => idx !== i));
 
-  const save = () => {
+  const save = async () => {
     if (!name) { alert('가게 이름을 입력해주세요'); return; }
     const address = selectedLocation === '직접 입력' ? customAddress : selectedLocation;
-    const coords = locationPresets[selectedLocation] || locationPresets['세종시 조치원읍'];
+    let coords = locationPresets[selectedLocation] || locationPresets['세종시 조치원읍'];
+
+    // 직접 입력 시 Gemini로 좌표 조회
+    if (selectedLocation === '직접 입력' && customAddress) {
+      try {
+        const res = await fetch('/api/stores/geocode', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ address: customAddress }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          coords = { lat: data.lat, lng: data.lng };
+        }
+      } catch {}
+    }
+
     onRegistered({
       name,
       address,
