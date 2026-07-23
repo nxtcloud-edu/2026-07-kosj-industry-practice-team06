@@ -144,6 +144,17 @@ DATA_API_KEY=your_public_data_api_key_here
 
 > ⚠️ **API 키는 절대 커밋하지 마세요!** `.gitignore`에 `.env`가 포함되어 있습니다.
 
+## 배포
+
+| 서비스 | 플랫폼 | URL |
+|--------|--------|-----|
+| 소상공인 앱 + 진흥원 대시보드 | Render | https://two026-07-kosj-industry-practice-team06.onrender.com |
+| Next.js 프론트엔드 | Vercel | https://2026-07-kosj-industry-practice-team.vercel.app |
+
+> **시연 시에는 Render URL 사용** (전체 기능 포함). Vercel은 Next.js 배포 증빙용.
+>
+> Render 무료 플랜은 15분 미사용 시 슬립합니다. 시연 5분 전에 미리 접속해서 서버를 깨워두세요.
+
 ## 팀 역할
 
 | 역할 | 담당 범위 |
