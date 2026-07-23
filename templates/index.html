@@ -141,6 +141,8 @@
         <div id="template-image"></div>
         <div style="display:flex; gap:8px; margin-top:10px;">
             <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="changeTemplate()">🎨 템플릿 변경</button>
+            <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="copyTemplateImage()">📋 이미지 복사</button>
+            <button class="btn-outline" style="flex:1; padding:8px; border-radius:8px; font-size:12px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="saveTemplateImage()">📥 이미지 저장</button>
         </div>
     </div>
 
@@ -171,27 +173,20 @@
         <input id="banner-edit" class="hidden" type="text" style="margin-top:8px;">
     </div>
 
+    <!-- 해시태그 -->
+    <div class="card" id="hashtag-section" class="hidden">
+        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">#️⃣ 추천 해시태그</h3>
+        <div id="hashtag-display" style="padding:12px; background:#f8fafc; border-radius:10px; font-size:14px; line-height:1.7;"></div>
+    </div>
+
     <!-- 액션 버튼 -->
     <div style="padding:0 16px; display:flex; gap:8px;">
         <button id="btn-edit" class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="toggleEdit()">✏️ 문구 수정</button>
         <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="regenerateContent()">🔄 다시 생성</button>
     </div>
-    <div style="padding:8px 16px;">
-        <p style="font-size:12px; font-weight:600; color:var(--text-light); margin-bottom:6px;">📝 문구</p>
-        <div style="display:flex; gap:8px;">
-            <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="copyAll()">📋 문구 복사</button>
-            <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="saveContent()">💾 문구 저장</button>
-        </div>
-    </div>
-    <div style="padding:4px 16px 16px;">
-        <p style="font-size:12px; font-weight:600; color:var(--text-light); margin-bottom:6px;">🖼️ 이미지</p>
-        <div style="display:flex; gap:8px;">
-            <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="copyTemplateImage()">📋 이미지 복사</button>
-            <button class="btn-outline" style="flex:1; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="saveTemplateImage()">📥 이미지 저장</button>
-        </div>
-    </div>
-    <div style="padding:0 16px 24px;">
-        <button class="btn-outline" style="width:100%; padding:10px; border-radius:10px; font-size:13px; cursor:pointer; border:1.5px solid var(--border); background:white;" onclick="showScreen('saved')">📁 보관함 보기</button>
+    <div style="padding:8px 16px 24px; display:flex; gap:8px;">
+        <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="copyAll()">📋 문구 복사</button>
+        <button class="btn btn-primary" style="flex:1; padding:10px; font-size:13px;" onclick="saveContent()">💾 문구 저장</button>
     </div>
 </div>
 
@@ -222,6 +217,7 @@
         <h1>관광 연계</h1>
         <p>내 가게 주변 관광지·축제</p>
     </div>
+    <div id="tourism-festivals"></div>
     <div id="tourism-spots"></div>
     <div style="padding:12px 16px 4px;"><h3 style="font-size:14px; font-weight:700;">추천 코스</h3></div>
     <div class="card" id="tourism-course"></div>
@@ -430,11 +426,20 @@ function displayResult(data) {
             ${data.instagram && data.instagram.includes('한정') ? '<p style="font-size:12px; color:var(--text-light); margin-top:4px;">💡 "한정 판매"는 실제 진행 여부를 확인해 주세요.</p>' : ''}
         </div>
     `;
-    // 캡션 & 배너
+    // 캡션 & 배너 & 해시태그
     document.getElementById('caption-display').textContent = data.instagram || '';
     document.getElementById('banner-display').textContent = data.banner || '';
     document.getElementById('caption-edit').value = data.instagram || '';
     document.getElementById('banner-edit').value = data.banner || '';
+    // 해시태그
+    const hashtagSection = document.getElementById('hashtag-section');
+    const hashtagDisplay = document.getElementById('hashtag-display');
+    if (data.hashtags) {
+        hashtagSection.style.display = 'block';
+        hashtagDisplay.textContent = data.hashtags;
+    } else {
+        hashtagSection.style.display = 'none';
+    }
     isEditing = false;
     document.getElementById('caption-edit').classList.add('hidden');
     document.getElementById('banner-edit').classList.add('hidden');
@@ -765,20 +770,40 @@ const courseTemplates = [
 async function loadTourism() {
     if (!store) return;
     try {
-        const res = await fetch('/api/tourism/festivals', {
+        const res = await fetch('/api/tourism/data', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ lat: store.lat, lng: store.lng, radius: 5000 })
+            body: JSON.stringify({ lat: store.lat, lng: store.lng, radius: 2000 })
         });
         const data = await res.json();
-        if (data.success && data.festivals.length > 0) {
-            tourismFestivals = data.festivals;
-            document.getElementById('tourism-spots').innerHTML = data.festivals.map(f => `
-                <div class="card"><div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <div><h3 style="font-size:14px; font-weight:700;">🎉 ${f.title}</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${f.start_date || ''}~${f.end_date || ''} | ${f.address || ''}</p></div>
-                    <span class="badge badge-festival">축제</span>
-                </div></div>
-            `).join('');
+        if (data.success) {
+            tourismFestivals = data.festivals || [];
+            // 축제 표시
+            let festivalsHtml = '';
+            if (data.festivals && data.festivals.length > 0) {
+                festivalsHtml = '<div style="padding:0 16px;"><h3 style="font-size:13px; font-weight:600; color:var(--text-light); margin:8px 0 4px;">🎉 축제·행사</h3></div>';
+                festivalsHtml += data.festivals.map(f => `
+                    <div class="card"><div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div><h3 style="font-size:14px; font-weight:700;">🎉 ${f.title}</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${f.start_date || ''}~${f.end_date || ''} | ${f.address || ''}</p></div>
+                        <span class="badge badge-festival">축제</span>
+                    </div></div>
+                `).join('');
+            }
+            document.getElementById('tourism-festivals').innerHTML = festivalsHtml;
+
+            // 관광지 표시
+            let spotsHtml = '';
+            if (data.spots && data.spots.length > 0) {
+                spotsHtml = '<div style="padding:0 16px;"><h3 style="font-size:13px; font-weight:600; color:var(--text-light); margin:12px 0 4px;">🏞️ 주변 관광지</h3></div>';
+                spotsHtml += data.spots.map(s => `
+                    <div class="card"><div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div><h3 style="font-size:14px; font-weight:700;">🏞️ ${s.title}</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">${s.address || ''}</p></div>
+                        <span class="badge badge-season">관광지</span>
+                    </div></div>
+                `).join('');
+            }
+            document.getElementById('tourism-spots').innerHTML = spotsHtml;
+
             currentCourseIdx = 0;
             renderCurrentCourse();
         } else { showSampleTourism(); }
@@ -787,9 +812,13 @@ async function loadTourism() {
 
 function showSampleTourism() {
     tourismFestivals = [{ title: '조치원 복숭아 축제' }];
+    document.getElementById('tourism-festivals').innerHTML = `
+        <div style="padding:0 16px;"><h3 style="font-size:13px; font-weight:600; color:var(--text-light); margin:8px 0 4px;">🎉 축제·행사</h3></div>
+        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🎉 조치원 복숭아 축제</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">7/25~7/27 | 세종시 조치원읍</p></div><span class="badge badge-festival">축제</span></div></div>
+    `;
     document.getElementById('tourism-spots').innerHTML = `
-        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🎉 조치원 복숭아 축제</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">7/25~7/27 | 내 가게에서 도보 5분</p></div><span class="badge badge-festival">D-7</span></div></div>
-        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🏞️ 세종호수공원</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">차량 15분 | 관광지</p></div><span class="badge badge-season">상시</span></div></div>
+        <div style="padding:0 16px;"><h3 style="font-size:13px; font-weight:600; color:var(--text-light); margin:12px 0 4px;">🏞️ 주변 관광지</h3></div>
+        <div class="card"><div style="display:flex; justify-content:space-between;"><div><h3 style="font-size:14px; font-weight:700;">🏞️ 세종호수공원</h3><p style="font-size:12px; color:var(--text-light); margin-top:4px;">세종시 연기면</p></div><span class="badge badge-season">관광지</span></div></div>
     `;
     currentCourseIdx = 0;
     renderCurrentCourse();
