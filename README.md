@@ -70,7 +70,8 @@
 │   │   │   ├── content.py      ← 콘텐츠 생성 API (SFR-002)
 │   │   │   ├── market.py       ← 상권 분석 API (SFR-001)
 │   │   │   ├── tourism.py      ← 관광 연계 API (SFR-003)
-│   │   │   ├── stores.py       ← 가게 관리 API (DAR-003)
+│   │   │   ├── suggestions.py  ← 시즌·이벤트 선제 제안 API (SFR-004)
+│   │   │   ├── stores.py       ← 가게 관리 + 좌표 조회 API (DAR-003)
 │   │   │   └── admin.py        ← 발주기관 대시보드 API (SFR-006)
 │   │   └── services/
 │   │       ├── llm.py          ← Gemini 호출 (레거시)
@@ -88,12 +89,13 @@
 │   │   ├── page.js             ← 메인 페이지 (탭 전환)
 │   │   ├── globals.css         ← 전역 스타일
 │   │   └── screens/            ← 화면 컴포넌트
-│   │       ├── RegisterScreen.js
-│   │       ├── HomeScreen.js
-│   │       ├── ResultScreen.js
-│   │       ├── ReportScreen.js
-│   │       ├── TourismScreen.js
-│   │       └── SettingsScreen.js
+│   │       ├── RegisterScreen.js  ← 가게 등록 (위치 선택 + Gemini 좌표 조회)
+│   │       ├── HomeScreen.js     ← 자연어 입력 + 위치·날짜 기반 추천 제안
+│   │       ├── ResultScreen.js   ← 결과 (템플릿 이미지 + 검수 + 문구 + 해시태그)
+│   │       ├── SavedScreen.js    ← 보관함 (저장된 콘텐츠 관리)
+│   │       ├── ReportScreen.js   ← 상권 리포트 (업종별 전략)
+│   │       ├── TourismScreen.js  ← 관광 연계 (축제 + 관광지 + 코스)
+│   │       └── SettingsScreen.js ← 설정
 │   ├── next.config.js          ← API 프록시 설정
 │   └── package.json
 ├── templates/
